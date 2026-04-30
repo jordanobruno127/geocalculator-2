@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Компрессионные испытания мерзлых грунтов</title>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#f3f1ec;--bg-c:#fafaf7;--bg-i:#fff;--bg-th:#eeece7;--bg-alt:#f5f3ee;
+  --ac:#2a5538;--acl:#3d7a52;--acd:#cfe0d6;--acb:#e8f2ec;
+  --t:#1a1a17;--t2:#555550;--t3:#8e8e86;
+  --b:#d8d5cd;--bl:#e6e3db;
+  --s:0 1px 4px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sm:0 4px 14px rgba(0,0,0,.08);
+  --r:10px;--rs:6px;--rl:14px;
+  --fn:'Golos Text',system-ui,sans-serif;--mo:'JetBrains Mono',monospace;
+  --frozen-bg:#deeaf8;--frozen-t:#0c447c;--frozen-row:rgba(12,68,124,0.03);
+  --thaw-bg:#dff0d0;  --thaw-t:#3b6d11;  --thaw-row:rgba(59,109,17,0.04);
+  --load-bg:#e9e8fc;  --load-t:#3c3489;  --load-row:transparent;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fn);background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden;position:relative}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(90,80,60,.17) 1px,transparent 1px);background-size:24px 24px;pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;left:0;top:0;bottom:0;width:5px;background:repeating-linear-gradient(180deg,#85a36e 0 10px,#c09a55 10px 24px,#a87c5a 24px 42px,#766050 42px 56px);opacity:.55;z-index:10}
+
+.wrap{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:28px 22px 60px 32px}
+
+/* ── header ── */
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:28px;flex-wrap:wrap}
+.hl{flex:1}
+.hbadge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mo);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ac);background:var(--acb);border:1px solid var(--acd);border-radius:20px;padding:3px 10px;margin-bottom:8px}
+.hbadge::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--ac)}
+h1{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.2}
+h1 span{color:var(--ac)}
+.hsub{font-size:13px;color:var(--t2);margin-top:5px;max-width:500px;line-height:1.6}
+.hright{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.noise-chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mo);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ac);background:var(--acb);border:1px solid var(--acd);border-radius:20px;padding:3px 10px}
+.noise-chip::before{content:'±';font-weight:600}
+.seed-lbl{font-family:var(--mo);font-size:10px;color:var(--t3)}
+
+/* ── tabs ── */
+.tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--b);position:relative}
+.tab-btn{padding:11px 24px 10px;font-family:var(--fn);font-size:14px;font-weight:600;color:var(--t3);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .18s;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.tab-btn:hover{color:var(--t2)}
+.tab-btn.active{color:var(--ac);border-bottom-color:var(--ac)}
+.tab-badge{font-family:var(--mo);font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500}
+.tab-badge-frozen{background:var(--frozen-bg);color:var(--frozen-t)}
+.tab-badge-thaw{background:var(--thaw-bg);color:var(--thaw-t)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.home-btn {
+    position: fixed;
+    top: 16px; right: 16px;
+    z-index: 100;
+    width: 44px; height: 44px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all .18s;
+    text-decoration: none;
+}
+.home-btn:hover {
+    background: var(--accent-bg);
+    border-color: var(--accent-dim);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* ── panel ── */
+.panel{background:var(--bg-c);border:1px solid var(--b);border-radius:var(--rl);padding:22px 20px;box-shadow:var(--s);margin-bottom:18px}
+.ph{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.ph::after{content:'';flex:1;height:1px;background:var(--bl)}
+.hint{font-size:12px;color:var(--t3);margin-top:10px;line-height:1.5}
+
+/* ── grid ── */
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.r4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+@media(max-width:720px){.r4{grid-template-columns:1fr 1fr}.r2,.r3{grid-template-columns:1fr}}
+
+.field label{display:block;font-size:11.5px;color:var(--t2);margin-bottom:4px;font-weight:500}
+input[type=number],select{width:100%;background:var(--bg-i);border:1px solid var(--b);border-radius:var(--rs);padding:7px 10px;font-family:var(--mo);font-size:13px;color:var(--t);outline:none;transition:border-color .14s;-webkit-appearance:none;appearance:none}
+input:focus,select:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(42,85,56,.1)}
+input:disabled{opacity:.45;background:var(--bg-alt);cursor:not-allowed}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238e8e86' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;padding-right:28px;cursor:pointer}
+
+/* ── checkbox row ── */
+.check-row{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+input[type=checkbox]{width:15px;height:15px;accent-color:var(--ac);cursor:pointer;flex-shrink:0}
+.check-label{font-size:12.5px;color:var(--t2);cursor:pointer;user-select:none}
+.reseed-btn{font-family:var(--mo);font-size:11px;color:var(--t3);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;transition:color .14s}
+.reseed-btn:hover{color:var(--ac)}
+
+/* ── steps table ── */
+.steps-table{width:100%;border-collapse:collapse;margin-bottom:12px}
+.steps-table thead th{background:var(--bg-th);padding:8px 12px;text-align:left;font-family:var(--mo);font-size:10px;font-weight:500;color:var(--t2);border-bottom:1px solid var(--b);letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.steps-table thead th:last-child{width:36px}
+.steps-table tbody tr{border-bottom:1px solid var(--bl);transition:background .1s}
+.steps-table tbody tr.row-frozen{background:var(--frozen-row)}
+.steps-table tbody tr.row-thaw{background:var(--thaw-row)}
+.steps-table tbody tr:last-child{border-bottom:none}
+.steps-table tbody tr:hover{background:var(--bg-alt)}
+.steps-table tbody td{padding:7px 12px;font-family:var(--mo);font-size:12px;color:var(--t3)}
+.steps-table tbody td:nth-child(2) input{max-width:180px;padding:5px 8px;font-size:12px}
+.steps-table tbody td input[type=number]{padding:5px 8px;font-size:12px;max-width:160px}
+
+/* badge */
+.badge{font-family:var(--mo);font-size:10.5px;padding:3px 9px;border-radius:20px;font-weight:500;white-space:nowrap;display:inline-block}
+.badge-frozen{background:var(--frozen-bg);color:var(--frozen-t)}
+.badge-thaw{background:var(--thaw-bg);color:var(--thaw-t)}
+.badge-load{background:var(--load-bg);color:var(--load-t)}
+
+.step-del{background:none;border:none;color:var(--t3);cursor:pointer;padding:3px 7px;border-radius:4px;font-size:15px;line-height:1;transition:all .14s}
+.step-del:hover{color:#c04040;background:#fdecea}
+
+/* ── buttons ── */
+.btn-row{display:flex;gap:10px;flex-wrap:wrap}
+.btn-add{background:var(--acb);color:var(--ac);border:1px solid var(--acd);border-radius:var(--rs);padding:8px 16px;font-family:var(--fn);font-size:13px;font-weight:600;cursor:pointer;transition:all .14s}
+.btn-add:hover{background:var(--acd)}
+.btn-calc{flex:1;min-width:140px;padding:10px;background:var(--ac);color:#fff;border:none;border-radius:var(--rs);font-family:var(--fn);font-size:14px;font-weight:600;cursor:pointer;transition:all .17s;display:flex;align-items:center;justify-content:center;gap:7px;letter-spacing:-.01em}
+.btn-calc:hover{background:var(--acl);transform:translateY(-1px);box-shadow:0 4px 14px rgba(42,85,56,.28)}
+.btn-calc:active{transform:translateY(0)}
+.btn-re{display:none;padding:9px 16px;background:var(--bg-c);color:var(--t2);border:1px solid var(--b);border-radius:var(--rs);font-family:var(--fn);font-size:13px;cursor:pointer;transition:all .14s}
+.btn-re:hover{background:var(--bg-alt);border-color:var(--ac);color:var(--ac)}
+
+/* ── chart (frozen / SVG) ── */
+.chart-wrap-svg{padding:16px;border-bottom:1px solid var(--bl);background:var(--bg-alt)}
+.chart-lbl{font-size:11px;color:var(--t3);margin-bottom:10px;font-family:var(--mo);letter-spacing:.04em;text-transform:uppercase}
+svg#chartFrozen{display:block;width:100%;overflow:visible}
+
+/* ── results (frozen) ── */
+.rc{background:var(--bg-c);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;box-shadow:var(--sm);display:none}
+.rc.on{display:block}
+.rh{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--bl);background:var(--bg-th)}
+.rtit{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.recalc-btn{font-family:var(--mo);font-size:10.5px;color:var(--ac);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0}
+.recalc-btn:hover{color:var(--acl)}
+
+/* ── results (thaw) ── */
+#thawResults{display:none}
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+@media(max-width:640px){.results-grid{grid-template-columns:1fr}}
+.trend-eq{font-family:var(--mo);font-size:18px;font-weight:500;color:var(--t);margin-bottom:10px;letter-spacing:-.02em}
+.trend-sub{font-size:12px;color:var(--t3);line-height:1.7}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric{background:var(--bg-alt);border:1px solid var(--bl);border-radius:var(--rs);padding:12px 14px}
+.metric-label{font-size:11px;color:var(--t3);margin-bottom:5px;font-family:var(--mo);letter-spacing:.03em}
+.metric-value{font-size:20px;font-weight:600;font-family:var(--mo);color:var(--t);letter-spacing:-.02em}
+.metric-value.green{color:var(--ac)}
+.legend-box{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:12px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.legend-sq{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.legend-tri{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid;flex-shrink:0}
+.legend-dash{width:22px;height:0;border-top:2px dashed;flex-shrink:0}
+.chart-wrap-canvas{background:var(--bg-alt);border-radius:var(--rs);padding:14px;margin-bottom:0;border:1px solid var(--bl)}
+.chart-wrap-canvas canvas{display:block;max-height:320px}
+
+/* ── shared table ── */
+.tsc{overflow-x:auto}
+table.rt{width:100%;border-collapse:collapse;font-size:12.5px}
+table.rt thead th{background:var(--bg-th);padding:9px 13px;text-align:right;font-family:var(--mo);font-size:10.5px;font-weight:500;color:var(--t2);border-bottom:1px solid var(--b);white-space:nowrap;user-select:none}
+table.rt thead th:first-child{text-align:left}
+table.rt thead th:nth-child(2){text-align:left}
+table.rt thead th.cc{cursor:pointer}
+table.rt thead th.cc:hover{color:var(--ac);background:var(--acb)}
+.ch{display:block;font-size:9px;color:var(--t3);font-weight:400;margin-top:1px;font-family:var(--fn);letter-spacing:0}
+table.rt tbody tr{transition:background .1s}
+table.rt tbody tr.row-frozen{background:var(--frozen-row)}
+table.rt tbody tr.row-thaw{background:var(--thaw-row)}
+table.rt tbody tr:nth-child(even):not(.row-frozen):not(.row-thaw){background:var(--bg-alt)}
+table.rt tbody tr:hover{background:var(--acd)}
+table.rt tbody td{padding:8px 13px;text-align:right;border-bottom:1px solid var(--bl);font-family:var(--mo);font-size:12px;color:var(--t)}
+table.rt tbody td:first-child{text-align:left;font-family:var(--fn);font-size:12px;color:var(--t2);font-weight:500}
+table.rt tbody td:nth-child(2){text-align:left}
+table.rt tbody tr:last-child td{border-bottom:none}
+.mu{color:var(--t3)}.hi{color:var(--ac);font-weight:500}
+td.noise-cell{color:var(--t3);font-size:11px}
+
+.avg-bar{padding:14px 18px;border-top:1px solid var(--bl);background:var(--bg-alt);font-family:var(--mo);font-size:12px;color:var(--t2);display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.avg-bar b{color:var(--ac);font-weight:600}
+.avg-bar .seed-note{color:var(--t3);font-size:10.5px;margin-left:auto}
+
+.ctsv{font-family:var(--mo);font-size:10.5px;color:var(--t3);background:var(--bg-i);border:1px solid var(--b);border-radius:var(--rs);padding:4px 11px;cursor:pointer;transition:all .14s}
+.ctsv:hover{color:var(--ac);border-color:var(--acd);background:var(--acb)}
+
+/* ── footer ── */
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--bl);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+footer span{font-family:var(--mo);font-size:10.5px;color:var(--t3)}
+
+/* ── toast ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ac);color:#fff;padding:9px 16px;border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:0 6px 20px rgba(42,85,56,.32);opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;z-index:9999}
+.toast.show{opacity:1;transform:translateY(0)}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.anim{animation:fu .28s ease}
+</style>
+</head>
+<body>
+<a class="home-btn" href="https://geocalculator.ru/index.html" title="На главную">🏠</a>
+<div class="wrap">
+
+<!-- HEADER -->
+<header>
+  <div class="hl">
+    <div class="hbadge">Geocalculator &middot; Геологические расчеты онлайн</div>
+    <h1>Компрессионные испытания <span>мерзлых грунтов</span></h1>
+    <p class="hsub"; style="color: #ff0000;"><b><u>ВАЖНО!</u> Представленные данные носят исключительно вспомогательный и информационный характер и не претендуют на достоверность. Модель представляет собой гипотетическое поведение грунта при выбранных условиях и характеристиках.</br></p>
+  </div>
+  <div class="hright">
+    <div class="noise-chip" id="frozenNoiseChip" style="display:none">шум</div>
+    <div class="seed-lbl" id="frozenSeedDisplay"></div>
+  </div>
+</header>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('frozen', this)">
+    <span class="tab-badge tab-badge-frozen">ГОСТ 12248.6</span>
+    Мерзлый грунт
+  </button>
+  <button class="tab-btn" onclick="switchTab('thaw', this)">
+    <span class="tab-badge tab-badge-thaw">ГОСТ 12248.6</span>
+    Оттаивание
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- TAB 1 — МЕРЗЛЫЙ ГРУНТ                             -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="tab-content active" id="tab-frozen">
+
+  <div class="panel">
+    <div class="ph">Параметры образца</div>
+    <div class="r2">
+      <div class="field">
+        <label>Высота образца h₀, мм</label>
+        <input id="fh0" type="number" value="25" step="0.1" min="1">
+      </div>
+      <div class="field">
+        <label>Средний коэффициент сжимаемости mv, МПа⁻¹</label>
+        <input id="favg_mv" type="number" value="0.073" step="0.001" min="0.001">
+      </div>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="frandomSeed" checked>
+      <label class="check-label" for="frandomSeed">Случайный шум при каждом расчёте</label>
+      <button class="reseed-btn" onclick="freseed()">↺ новый seed</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph">Ступени нагружения</div>
+    <table class="steps-table">
+      <thead>
+        <tr>
+          <th style="width:36px">№</th>
+          <th>Вертикальное давление σ, МПа</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="fsteps-body"></tbody>
+    </table>
+    <div class="btn-row">
+      <button class="btn-add" onclick="faddRow()">+ ступень</button>
+      <button class="btn-calc" onclick="fcalc()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Рассчитать
+      </button>
+    </div>
+  </div>
+
+  <div class="rc anim" id="fresult">
+    <div class="rh">
+      <span class="rtit">Результаты испытания</span>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="ctsv" onclick="fcpTSV()">Копировать TSV</button>
+        <button class="recalc-btn" onclick="fcalc()">↺ пересчитать с новым шумом</button>
+      </div>
+    </div>
+    <div class="chart-wrap-svg">
+      <div class="chart-lbl">σ (МПа) → ε (относительная деформация, д.е.)</div>
+      <svg id="chartFrozen" viewBox="0 0 720 300" preserveAspectRatio="xMidYMid meet" style="max-height:300px"></svg>
+    </div>
+    <div class="tsc">
+      <table class="rt">
+        <thead>
+          <tr>
+            <th>Ступень</th>
+            <th class="cc" onclick="fcpCol(0)">σ, МПа<span class="ch">↓ копировать</span></th>
+            <th class="cc" onclick="fcpCol(1)">ε, д.е.<span class="ch">↓ копировать</span></th>
+            <th class="cc" onclick="fcpCol(2)">Δh, мм<span class="ch">↓ копировать</span></th>
+            <th class="cc" onclick="fcpCol(3)">mv, МПа⁻¹<span class="ch">↓ копировать</span></th>
+            <th class="cc" onclick="fcpCol(4)">E, МПа<span class="ch">↓ копировать</span></th>
+            <th>δ-шум</th>
+          </tr>
+        </thead>
+        <tbody id="fout"></tbody>
+      </table>
+    </div>
+    <div class="avg-bar" id="favg"></div>
+  </div>
+
+</div><!-- /tab-frozen -->
+
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- TAB 2 — ОТТАИВАНИЕ                                -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-thaw">
+
+  <div class="panel">
+    <div class="ph">Заданные коэффициенты</div>
+    <div class="r4" style="margin-bottom:0">
+      <div class="field"><label>Коэф. оттаивания A₀, д.е.</label><input type="number" id="tA0" value="0.0036" step="0.0001" min="0"></div>
+      <div class="field"><label>Коэф. сжимаемости b, МПа⁻¹</label><input type="number" id="tb0" value="0.0940" step="0.001" min="0"></div>
+      <div class="field"><label>Высота образца h₀, мм</label><input type="number" id="th0" value="25" step="0.1" min="1"></div>
+      <div class="field"><label>Разброс точек, % от ε</label><input type="number" id="tscatter" value="8" step="1" min="1" max="25"></div>
+    </div>
+    <p class="hint">Точки генерируются с разбросом, однако МНК по ним гарантированно возвращает ровно заданные A₀ и b.</p>
+  </div>
+
+  <div class="panel">
+    <div class="ph">Ступени нагружения</div>
+    <table class="steps-table">
+      <thead>
+        <tr>
+          <th style="width:36px">№</th>
+          <th style="width:150px">Тип</th>
+          <th>σ, МПа</th>
+          <th style="width:36px"></th>
+        </tr>
+      </thead>
+      <tbody id="tstepsBody"></tbody>
+    </table>
+    <div class="btn-row">
+      <button class="btn-add" onclick="taddStep()">+ Ступень</button>
+      <button class="btn-calc" onclick="tcalculate()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Рассчитать
+      </button>
+      <button class="btn-re" id="treBtn" onclick="trescatter()">↻ Другой разброс</button>
+    </div>
+  </div>
+
+  <div id="thawResults">
+    <div class="results-grid">
+      <div class="panel" style="margin-bottom:0">
+        <div class="ph">Уравнение линии тренда</div>
+        <div class="trend-eq" id="ttrendEq"></div>
+        <div class="trend-sub">
+          <div><strong style="color:var(--t)">b</strong> — коэффициент сжимаемости при оттаивании</div>
+          <div><strong style="color:var(--t)">A₀</strong> — коэффициент оттаивания</div>
+        </div>
+      </div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="ph">Параметры</div>
+        <div class="metrics-grid" id="tsummaryMetrics"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">График ε = f(σ) — по ГОСТ</div>
+      <div class="legend-box" id="tlegendBox"></div>
+      <div class="chart-wrap-canvas">
+        <canvas id="tepsilonChart" height="300"></canvas>
+      </div>
+    </div>
+
+    <div class="rc anim on">
+      <div class="rh">
+        <span class="rtit">Таблица результатов</span>
+        <button class="ctsv" onclick="tcpTSV()">Копировать TSV</button>
+      </div>
+      <div class="tsc">
+        <table class="rt">
+          <thead>
+            <tr>
+              <th>№</th>
+              <th>Тип</th>
+              <th class="cc" onclick="tcpCol(0)">σ, МПа<span class="ch">↓ копировать</span></th>
+              <th class="cc" onclick="tcpCol(1)">ε, д.е.<span class="ch">↓ копировать</span></th>
+              <th class="cc" onclick="tcpCol(2)">Δh, мм<span class="ch">↓ копировать</span></th>
+            </tr>
+          </thead>
+          <tbody id="tresultsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tab-thaw -->
+
+<footer>
+  <span>ГОСТ 12248.6-2020 · Компрессионные испытания мерзлых грунтов</span>
+  <span>Нажмите заголовок столбца → скопировать значения</span>
+</footer>
+</div><!-- /wrap -->
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  // show noise chip only on frozen tab
+  document.getElementById('frozenNoiseChip').style.display = name === 'frozen' ? '' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════
+// SHARED TOAST
+// ═══════════════════════════════════════════════════════
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function toComma(v) { return String(v).replace('.', ','); }
+function nc(v, d) { return v == null ? '' : toComma(v.toFixed(d)); }
+
+
+// ╔═══════════════════════════════════════════════════════╗
+// ║  TAB 1 — МЕРЗЛЫЙ ГРУНТ                               ║
+// ╚═══════════════════════════════════════════════════════╝
+let fseed = Math.floor(Math.random() * 1e9);
+
+function freseed() {
+  fseed = Math.floor(Math.random() * 1e9);
+  document.getElementById('frozenSeedDisplay').textContent = 'seed: ' + fseed;
+}
+freseed();
+document.getElementById('frozenNoiseChip').style.display = '';
+
+function mulberry32(s) {
+  return function() {
+    s |= 0; s = s + 0x6D2B79F5 | 0;
+    let t = Math.imul(s ^ s >>> 15, 1 | s);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function frandn(rng) {
+  let u, v;
+  do { u = rng(); } while (u === 0);
+  v = rng();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+let frows = [];
+function faddRow(v = 0.05) { frows.push({ sigma: v }); frenderSteps(); }
+function fdelRow(i) { frows.splice(i, 1); frenderSteps(); }
+function frenderSteps() {
+  const tb = document.getElementById('fsteps-body');
+  tb.innerHTML = frows.map((r, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td><input type="number" value="${r.sigma}" step="0.001" min="0.001"
+             onchange="frows[${i}].sigma = parseFloat(this.value)||0"></td>
+      <td><button class="step-del" onclick="fdelRow(${i})" title="Удалить">×</button></td>
+    </tr>`).join('');
+}
+
+const FPROFILE = { mvNoise: 0.04, epsNoise: 0.0018, stickSlip: 0.25, slipMag: 0.07 };
+let fcalcData = [];
+
+function fcalc() {
+  const h0 = parseFloat(document.getElementById('fh0').value) || 25;
+  const avg_mv = parseFloat(document.getElementById('favg_mv').value) || 0.073;
+  if (frows.length < 2) { toast('⚠ Нужно минимум 2 ступени'); return; }
+  if (document.getElementById('frandomSeed').checked) freseed();
+  const rng = mulberry32(fseed);
+
+  frows.sort((a, b) => a.sigma - b.sigma);
+  const s = frows.map(r => r.sigma);
+  const n = s.length;
+  const d = [s[0]];
+  for (let i = 1; i < n; i++) d.push(s[i] - s[i - 1]);
+
+  let factors = [0.7];
+  for (let i = 1; i < n; i++) {
+    if (i === 1) factors.push(2.2);
+    else if (i === 2) factors.push(1.6);
+    else factors.push(Math.max(0.6, 1.8 - i * 0.2));
+  }
+
+  const noisedFactors = factors.map((f, i) => {
+    let noise = 1 + FPROFILE.mvNoise * frandn(rng);
+    if (i > 0 && rng() < FPROFILE.stickSlip)
+      noise *= (rng() < 0.5 ? 1 + FPROFILE.slipMag : 1 - FPROFILE.slipMag);
+    return f * Math.max(0.5, noise);
+  });
+
+  const totalSigma = s[n - 1] - s[0];
+  let denom = 0;
+  for (let i = 1; i < d.length; i++) denom += d[i] * noisedFactors[i];
+  const scale = avg_mv * totalSigma / denom;
+  const mv = noisedFactors.map((f, i) => (i === 0 ? null : f * scale));
+
+  let eps = [], noiseLog = [], cum = 0;
+  for (let i = 0; i < n; i++) {
+    const mv_i = (i === 0) ? noisedFactors[0] * scale : mv[i];
+    cum += mv_i * d[i];
+    let epsDelta = FPROFILE.epsNoise * Math.abs(frandn(rng));
+    if (rng() < 0.15) epsDelta = -epsDelta * 0.4;
+    eps.push(Math.max(0, cum + epsDelta));
+    noiseLog.push(epsDelta);
+  }
+  const dh = eps.map(e => e * h0);
+  const E  = mv.map(v => v ? 0.8 / v : null);
+
+  fcalcData = s.map((sv, i) => ({ step: i + 1, sigma: sv, eps: eps[i], dh: dh[i], mv: mv[i], E: E[i], noise: noiseLog[i] }));
+  frenderTable(fcalcData);
+  frenderAvg(eps, totalSigma);
+  fdrawChart(s, eps, dh);
+
+  const res = document.getElementById('fresult');
+  res.classList.add('on', 'anim');
+  setTimeout(() => res.classList.remove('anim'), 400);
+}
+
+function frenderTable(data) {
+  document.getElementById('fout').innerHTML = data.map(r => {
+    const noiseStr = (r.noise >= 0 ? '+' : '') + (r.noise * 1000).toFixed(2) + '×10⁻³';
+    return `<tr>
+      <td>Ступень ${r.step}</td>
+      <td data-col="0">${r.sigma.toFixed(3)}</td>
+      <td data-col="1">${r.eps.toFixed(5)}</td>
+      <td data-col="2">${r.dh.toFixed(3)}</td>
+      <td data-col="3" class="${r.mv === null ? 'mu' : ''}">${r.mv === null ? '—' : r.mv.toFixed(4)}</td>
+      <td data-col="4" class="${r.E === null ? 'mu' : 'hi'}">${r.E === null ? '—' : r.E.toFixed(2)}</td>
+      <td class="noise-cell">${noiseStr}</td>
+    </tr>`;
+  }).join('');
+}
+
+function frenderAvg(eps, totalSigma) {
+  const n = eps.length;
+  const real_mv = (eps[n-1] - eps[0]) / totalSigma;
+  const real_E = 0.8 / real_mv;
+  document.getElementById('favg').innerHTML = `
+    <span>Средний mv = <b>${real_mv.toFixed(4)}</b> МПа⁻¹</span>
+    <span>Средний E = <b>${real_E.toFixed(2)}</b> МПа</span>
+    <span>Мерзлый грунт</span>
+    <span class="seed-note">seed: ${fseed}</span>`;
+}
+
+function fdrawChart(sigma, eps, dh) {
+  const W = 720, H = 300;
+  const M = { l: 68, r: 24, t: 20, b: 48 };
+  const pw = W - M.l - M.r, ph = H - M.t - M.b;
+  const maxS = Math.max(...sigma) * 1.1;
+  const maxE = Math.max(...eps) * 1.18;
+  const sx = v => M.l + v / maxS * pw;
+  const sy = v => M.t + ph - v / maxE * ph;
+
+  function crPath(pts) {
+    if (pts.length < 2) return '';
+    let d = `M ${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[Math.max(0, i-1)], p1 = pts[i], p2 = pts[i+1], p3 = pts[Math.min(pts.length-1, i+2)];
+      const cp1x = p1[0] + (p2[0]-p0[0])/6, cp1y = p1[1] + (p2[1]-p0[1])/6;
+      const cp2x = p2[0] - (p3[0]-p1[0])/6, cp2y = p2[1] - (p3[1]-p1[1])/6;
+      d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+    }
+    return d;
+  }
+
+  const pts = sigma.map((s, i) => [sx(s), sy(eps[i])]);
+  const firstX = pts[0][0].toFixed(1), lastX = pts[pts.length-1][0].toFixed(1), baseY = (M.t + ph).toFixed(1);
+  const fillD = crPath(pts) + ` L ${lastX},${baseY} L ${firstX},${baseY} Z`;
+
+  let gridY = '', gridX = '';
+  for (let i = 0; i <= 5; i++) {
+    const yv = maxE * i / 5, yp = sy(yv).toFixed(1);
+    gridY += `<line x1="${M.l}" y1="${yp}" x2="${M.l+pw}" y2="${yp}" stroke="#e4e1d8" stroke-width="1" stroke-dasharray="4,4"/>`;
+    gridY += `<text x="${M.l-6}" y="${parseFloat(yp)+4}" text-anchor="end" font-size="10" font-family="JetBrains Mono,monospace" fill="#a0a098">${yv.toFixed(4)}</text>`;
+  }
+  sigma.forEach(sv => {
+    const xp = sx(sv).toFixed(1);
+    gridX += `<line x1="${xp}" y1="${M.t}" x2="${xp}" y2="${M.t+ph}" stroke="#e4e1d8" stroke-width="1" stroke-dasharray="4,4"/>`;
+    gridX += `<text x="${xp}" y="${M.t+ph+16}" text-anchor="middle" font-size="10" font-family="JetBrains Mono,monospace" fill="#a0a098">${sv.toFixed(2)}</text>`;
+  });
+
+  document.getElementById('chartFrozen').innerHTML = `
+    <rect x="${M.l}" y="${M.t}" width="${pw}" height="${ph}" fill="#f8f7f3" rx="6" stroke="#e0ddd4" stroke-width="1"/>
+    ${gridY}${gridX}
+    <path d="${fillD}" fill="rgba(42,85,56,0.07)"/>
+    <path d="${crPath(pts)}" fill="none" stroke="#2a5538" stroke-width="2.2" stroke-linejoin="round" opacity="0.9"/>
+    ${pts.map(([x,y],i) => `
+      <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="white" stroke="#2a5538" stroke-width="2">
+        <title>σ = ${sigma[i].toFixed(3)} МПа\nε = ${eps[i].toFixed(5)} д.е.\nΔh = ${dh[i].toFixed(3)} мм</title>
+      </circle>`).join('')}
+    <line x1="${M.l}" y1="${M.t}" x2="${M.l}" y2="${M.t+ph}" stroke="#7a7a72" stroke-width="1.5"/>
+    <line x1="${M.l}" y1="${M.t+ph}" x2="${M.l+pw}" y2="${M.t+ph}" stroke="#7a7a72" stroke-width="1.5"/>
+    <text x="${M.l+pw/2}" y="${H-4}" text-anchor="middle" font-size="12" font-family="Golos Text,sans-serif" fill="#6a6a62">σ, МПа</text>
+    <text transform="rotate(-90)" x="${-(M.t+ph/2)}" y="14" text-anchor="middle" font-size="12" font-family="Golos Text,sans-serif" fill="#6a6a62">ε, д.е.</text>`;
+}
+
+function fcpCol(colIdx) {
+  const cells = [...document.querySelectorAll(`#fresult td[data-col="${colIdx}"]`)]
+    .map(td => td.textContent.trim()).filter(v => v !== '—').map(v => v.replace('.', ','));
+  navigator.clipboard.writeText(cells.join('\n')).then(() => toast('✓ Столбец скопирован'));
+}
+function fcpTSV() {
+  if (!fcalcData.length) return;
+  const hdr = ['Ступень', 'σ МПа', 'ε д.е.', 'Δh мм', 'mv МПа-1', 'E МПа', 'δ-шум'];
+  const body = fcalcData.map(r => [
+    `Ступень ${r.step}`, nc(r.sigma,3), nc(r.eps,5), nc(r.dh,3),
+    r.mv===null?'':nc(r.mv,4), r.E===null?'':nc(r.E,2),
+    toComma((r.noise*1000).toFixed(2))+'e-3'
+  ].join('\t'));
+  navigator.clipboard.writeText([hdr.join('\t'), ...body].join('\n')).then(() => toast('✓ Таблица (TSV) скопирована'));
+}
+
+// init frozen
+[0.05, 0.12, 0.19, 0.26, 0.33, 0.40].forEach(v => faddRow(v));
+frenderSteps();
+
+
+// ╔═══════════════════════════════════════════════════════╗
+// ║  TAB 2 — ОТТАИВАНИЕ                                  ║
+// ╚═══════════════════════════════════════════════════════╝
+let tsteps = [
+  { sigma: 0.049, type: 'frozen' },
+  { sigma: 0.049, type: 'thaw'   },
+  { sigma: 0.099, type: 'load'   },
+  { sigma: 0.149, type: 'load'   },
+  { sigma: 0.200, type: 'load'   },
+  { sigma: 0.250, type: 'load'   },
+  { sigma: 0.300, type: 'load'   },
+];
+let tchartInst = null;
+let tlastRows  = [];
+
+function tbadge(type) {
+  if (type === 'frozen') return '<span class="badge badge-frozen">Мерзлый</span>';
+  if (type === 'thaw')   return '<span class="badge badge-thaw">Оттаивание</span>';
+  return '<span class="badge badge-load">Нагрузка</span>';
+}
+
+function trenderSteps() {
+  const tb = document.getElementById('tstepsBody');
+  tb.innerHTML = tsteps.map((s, i) => {
+    const isFrozen = i === 0, isThaw = i === 1;
+    const sigDisabled = isThaw ? 'disabled' : '';
+    const delStyle = i < 2 ? 'style="opacity:.25;pointer-events:none"' : '';
+    const rowClass = isFrozen ? 'row-frozen' : isThaw ? 'row-thaw' : '';
+    const onChange = isFrozen
+      ? `tsteps[0].sigma=parseFloat(this.value)||0;tsteps[1].sigma=tsteps[0].sigma;trenderSteps();`
+      : `tsteps[${i}].sigma=parseFloat(this.value)||0;`;
+    return `<tr class="${rowClass}">
+      <td style="color:var(--t3);font-family:var(--mo);font-size:11px">${i+1}</td>
+      <td>${tbadge(s.type)}</td>
+      <td><input type="number" value="${s.sigma}" step="0.001" min="0" ${sigDisabled} onchange="${onChange}"></td>
+      <td><button class="step-del" ${delStyle} onclick="tdelStep(${i})" title="Удалить">×</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function taddStep() {
+  const last = tsteps[tsteps.length - 1].sigma;
+  tsteps.push({ sigma: parseFloat((last + 0.05).toFixed(3)), type: 'load' });
+  trenderSteps();
+}
+function tdelStep(i) {
+  if (i < 2) return;
+  tsteps.splice(i, 1);
+  trenderSteps();
+}
+
+function trandn() {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function tgenerateExactRows(A0, b, h0, scatterPct) {
+  const trendSteps = tsteps.slice(1);
+  const n = trendSteps.length;
+  const xs = trendSteps.map(s => s.sigma);
+  const ys = trendSteps.map(s => A0 + b * s.sigma);
+  const noise = scatterPct / 100;
+  let raw = ys.map(y => y * noise * trandn() * 0.5);
+  const mR = raw.reduce((a, v) => a + v, 0) / n;
+  raw = raw.map(v => v - mR);
+  const xm = xs.reduce((a, v) => a + v, 0) / n;
+  const xc = xs.map(x => x - xm);
+  const drx = raw.reduce((a, v, i) => a + v * xc[i], 0);
+  const dxx = xc.reduce((a, v) => a + v * v, 0);
+  const sc = dxx > 0 ? drx / dxx : 0;
+  raw = raw.map((v, i) => v - sc * xc[i]);
+  const trendRows = trendSteps.map((s, i) => ({ sigma: s.sigma, eps: Math.max(0.00001, ys[i] + raw[i]), type: s.type, idx: i + 1 }));
+  const frozenRow = { sigma: tsteps[0].sigma, eps: A0, type: 'frozen', idx: 0 };
+  const allRows = [frozenRow, ...trendRows];
+  return allRows.map(r => ({ ...r, dh: r.eps * h0 }));
+}
+
+function tgetParams() {
+  return {
+    A0: parseFloat(document.getElementById('tA0').value) || 0.0036,
+    b:  parseFloat(document.getElementById('tb0').value) || 0.094,
+    h0: parseFloat(document.getElementById('th0').value) || 25,
+    sc: parseFloat(document.getElementById('tscatter').value) || 8
+  };
+}
+
+function tcalculate() {
+  const { A0, b, h0, sc } = tgetParams();
+  tlastRows = tgenerateExactRows(A0, b, h0, sc);
+  trenderResults(tlastRows, A0, b);
+  document.getElementById('treBtn').style.display = '';
+}
+function trescatter() {
+  const { A0, b, h0, sc } = tgetParams();
+  tlastRows = tgenerateExactRows(A0, b, h0, sc);
+  trenderResults(tlastRows, A0, b);
+}
+
+function trenderResults(rows, A0, b) {
+  const h0 = parseFloat(document.getElementById('th0').value) || 25;
+  const E  = b > 0 ? (0.8 / b).toFixed(2) : '—';
+  document.getElementById('ttrendEq').textContent = `ε = ${b.toFixed(4)} · σ + ${A0.toFixed(4)}`;
+  document.getElementById('tsummaryMetrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Коэф. оттаивания A₀</div><div class="metric-value green">${A0.toFixed(4)}</div></div>
+    <div class="metric"><div class="metric-label">Коэф. сжимаемости b, МПа⁻¹</div><div class="metric-value">${b.toFixed(4)}</div></div>
+    <div class="metric"><div class="metric-label">Модуль деформации E, МПа</div><div class="metric-value">${E}</div></div>
+    <div class="metric"><div class="metric-label">Δh при оттаивании A₀·h₀, мм</div><div class="metric-value">${(A0*h0).toFixed(3)}</div></div>`;
+
+  document.getElementById('tresultsBody').innerHTML = rows.map(r => {
+    const rowClass = r.type==='frozen' ? 'row-frozen' : r.type==='thaw' ? 'row-thaw' : '';
+    return `<tr class="${rowClass}">
+      <td>${r.idx + 1}</td>
+      <td>${tbadge(r.type)}</td>
+      <td data-col="0">${r.sigma.toFixed(3)}</td>
+      <td data-col="1" class="hi">${r.eps.toFixed(5)}</td>
+      <td data-col="2">${r.dh.toFixed(3)}</td>
+    </tr>`;
+  }).join('');
+
+  tdrawChart(rows, A0, b);
+  const res = document.getElementById('thawResults');
+  res.style.display = 'block';
+  res.classList.add('anim');
+  setTimeout(() => res.classList.remove('anim'), 400);
+}
+
+function tdrawChart(rows, A0, b) {
+  const frozenPts = rows.filter(r => r.type==='frozen').map(r => ({ x: r.sigma, y: +r.eps.toFixed(6) }));
+  const thawPts   = rows.filter(r => r.type==='thaw').map(r =>   ({ x: r.sigma, y: +r.eps.toFixed(6) }));
+  const loadPts   = rows.filter(r => r.type==='load').map(r =>   ({ x: r.sigma, y: +r.eps.toFixed(6) }));
+  const maxS = Math.max(...rows.map(r => r.sigma));
+  const trendPts = [{ x: 0, y: +A0.toFixed(6) }, { x: +maxS.toFixed(3), y: +(A0+b*maxS).toFixed(6) }];
+  const allE = rows.map(r => r.eps);
+  const minE = Math.min(...allE), maxE = Math.max(...allE);
+  const padE = (maxE - minE) * 0.18;
+  if (tchartInst) tchartInst.destroy();
+  tchartInst = new Chart(document.getElementById('tepsilonChart'), {
+    type: 'scatter',
+    data: {
+      datasets: [
+        { label: 'Мерзлый (ст. 1)',     data: frozenPts, backgroundColor: '#0c447c', pointRadius: 8, pointStyle: 'circle',   showLine: false },
+        { label: 'Оттаивание (ст. 2)',   data: thawPts,   backgroundColor: '#3b6d11', pointRadius: 8, pointStyle: 'triangle', showLine: false },
+        { label: 'Нагрузка оттаявшего', data: loadPts,   backgroundColor: '#3c3489', pointRadius: 7, pointStyle: 'rect',     showLine: false },
+        { label: `Тренд: ε = ${b.toFixed(4)}·σ + ${A0.toFixed(4)}`,
+          data: trendPts, type: 'line', borderColor: '#b85c2a', borderWidth: 2,
+          borderDash: [7,4], pointRadius: 0, fill: false, tension: 0 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => `σ = ${ctx.parsed.x.toFixed(3)} МПа   ε = ${ctx.parsed.y.toFixed(5)}` } }
+      },
+      scales: {
+        x: { type: 'linear', min: 0,
+          title: { display: true, text: 'Вертикальное давление σ, МПа', color: '#8e8e86', font: { size: 12, family: "'Golos Text'" } },
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { color: '#8e8e86', font: { size: 11, family: "'JetBrains Mono'" } } },
+        y: {
+          min: Math.max(0, +(minE-padE).toFixed(5)),
+          max: +(maxE+padE).toFixed(5),
+          title: { display: true, text: 'Относительная деформация ε, д.е.', color: '#8e8e86', font: { size: 12, family: "'Golos Text'" } },
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { color: '#8e8e86', font: { size: 11, family: "'JetBrains Mono'" } } }
+      }
+    }
+  });
+
+  document.getElementById('tlegendBox').innerHTML = [
+    { color: '#0c447c', shape: 'circle',   label: 'Мерзлый (ст. 1)' },
+    { color: '#3b6d11', shape: 'triangle', label: 'Оттаивание (ст. 2)' },
+    { color: '#3c3489', shape: 'square',   label: 'Нагрузка оттаявшего' },
+    { color: '#b85c2a', shape: 'dash',     label: `Тренд: ε = ${b.toFixed(4)}·σ + ${A0.toFixed(4)}` },
+  ].map(item => {
+    let icon;
+    if (item.shape==='dash')     icon = `<span class="legend-dash" style="border-color:${item.color}"></span>`;
+    else if (item.shape==='circle')   icon = `<span class="legend-dot" style="background:${item.color}"></span>`;
+    else if (item.shape==='triangle') icon = `<span class="legend-tri" style="border-bottom-color:${item.color}"></span>`;
+    else                              icon = `<span class="legend-sq" style="background:${item.color}"></span>`;
+    return `<span class="legend-item">${icon}${item.label}</span>`;
+  }).join('');
+}
+
+function tcpCol(colIdx) {
+  const cells = [...document.querySelectorAll(`#thawResults td[data-col="${colIdx}"]`)]
+    .map(td => td.textContent.trim().replace('.', ','));
+  if (!cells.length) return;
+  navigator.clipboard.writeText(cells.join('\n')).then(() => toast('✓ Столбец скопирован'));
+}
+function tcpTSV() {
+  if (!tlastRows.length) return;
+  const hdr = ['№', 'Тип', 'σ МПа', 'ε д.е.', 'Δh мм'];
+  const typeLabel = { frozen: 'Мерзлый', thaw: 'Оттаивание', load: 'Нагрузка' };
+  const body = tlastRows.map(r => [r.idx+1, typeLabel[r.type], nc(r.sigma,3), nc(r.eps,5), nc(r.dh,3)].join('\t'));
+  navigator.clipboard.writeText([hdr.join('\t'), ...body].join('\n')).then(() => toast('✓ Таблица (TSV) скопирована'));
+}
+
+// init thaw
+trenderSteps();
+</script>
+</body>
+</html>

@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Геотехнический калькулятор</title>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+.home-btn {
+    position: fixed;
+    top: 16px; right: 16px;
+    z-index: 100;
+    width: 44px; height: 44px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all .18s;
+    text-decoration: none;
+}
+.home-btn:hover {
+    background: var(--accent-bg);
+    border-color: var(--accent-dim);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+:root{
+  --bg:#f3f1ec;--bg-c:#fafaf7;--bg-i:#fff;--bg-th:#eeece7;--bg-alt:#f5f3ee;
+  --ac:#2a5538;--acl:#3d7a52;--acd:#cfe0d6;--acb:#e8f2ec;
+  --t:#1a1a17;--t2:#555550;--t3:#8e8e86;
+  --b:#d8d5cd;--bl:#e6e3db;
+  --s:0 1px 4px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sm:0 4px 14px rgba(0,0,0,.08);
+  --r:10px;--rs:6px;--rl:14px;
+  --fn:'Golos Text',system-ui,sans-serif;--mo:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fn);background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden;position:relative}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(90,80,60,.17) 1px,transparent 1px);background-size:24px 24px;pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;left:0;top:0;bottom:0;width:5px;background:repeating-linear-gradient(180deg,#85a36e 0 10px,#c09a55 10px 24px,#a87c5a 24px 42px,#766050 42px 56px);opacity:.55;z-index:10}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 22px 60px 32px}
+
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:32px;flex-wrap:wrap}
+.hl{flex:1}
+.hbadge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mo);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ac);background:var(--acb);border:1px solid var(--acd);border-radius:20px;padding:3px 10px;margin-bottom:8px}
+.hbadge::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--ac)}
+h1{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.2}
+h1 span{color:var(--ac)}
+.hsub{font-size:13px;color:var(--t2);margin-top:5px;max-width:520px;line-height:1.6}
+.hinfo{font-family:var(--mo);font-size:10.5px;color:var(--t3);background:var(--bg-c);border:1px solid var(--b);border-radius:var(--rs);padding:9px 14px;line-height:1.8;box-shadow:var(--s)}
+.hinfo strong{color:var(--t);font-weight:500}
+
+.tabs{display:flex;background:var(--bg-c);border:1px solid var(--b);border-radius:var(--rl);padding:4px;width:fit-content;margin-bottom:24px;box-shadow:var(--s)}
+.tab{padding:8px 20px;border:none;background:none;border-radius:9px;font-family:var(--fn);font-size:13.5px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .17s;display:flex;align-items:center;gap:7px}
+.tab svg{width:16px;height:16px;opacity:.5;transition:opacity .17s}
+.tab:hover{color:var(--t)}
+.tab.active{background:var(--ac);color:#fff;box-shadow:0 2px 8px rgba(42,85,56,.25)}
+.tab.active svg{opacity:1;filter:brightness(10)}
+.sec{display:none}.sec.on{display:block}
+
+.two-col{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}
+@media(max-width:860px){.two-col{grid-template-columns:1fr}}
+
+.panel{background:var(--bg-c);border:1px solid var(--b);border-radius:var(--rl);padding:20px 18px;box-shadow:var(--s)}
+.ph{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.ph::after{content:'';flex:1;height:1px;background:var(--bl)}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11.5px;color:var(--t2);margin-bottom:4px;font-weight:500}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+input[type=number],select{width:100%;background:var(--bg-i);border:1px solid var(--b);border-radius:var(--rs);padding:7px 10px;font-family:var(--mo);font-size:13px;color:var(--t);outline:none;transition:border-color .14s;-webkit-appearance:none;appearance:none}
+input:focus,select:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(42,85,56,.1)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238e8e86' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;padding-right:28px;cursor:pointer}
+.div{height:1px;background:var(--bl);margin:14px 0}
+.ildsp{background:var(--acb);border:1px solid var(--acd);border-radius:var(--rs);padding:5px 10px;font-family:var(--mo);font-size:11.5px;color:var(--ac);margin-top:5px;display:none}
+.ildsp.on{display:block}
+.cbtn{width:100%;padding:10px;margin-top:14px;background:var(--ac);color:#fff;border:none;border-radius:var(--rs);font-family:var(--fn);font-size:14px;font-weight:600;cursor:pointer;transition:all .17s;display:flex;align-items:center;justify-content:center;gap:7px;letter-spacing:-.01em}
+.cbtn:hover{background:var(--acl);transform:translateY(-1px);box-shadow:0 4px 14px rgba(42,85,56,.28)}
+.cbtn:active{transform:translateY(0)}
+
+/* Steps editor */
+.steps-box{background:var(--bg-alt);border:1px solid var(--bl);border-radius:var(--rs);padding:12px;margin-top:4px}
+.step-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.step-row:last-child{margin-bottom:0}
+.step-num{font-family:var(--mo);font-size:11px;color:var(--t3);min-width:20px;text-align:right}
+.step-input{flex:1;padding:5px 8px;font-family:var(--mo);font-size:12px;background:var(--bg-i);border:1px solid var(--b);border-radius:var(--rs);color:var(--t);outline:none}
+.step-input:focus{border-color:var(--ac)}
+.step-del{background:none;border:none;color:var(--t3);cursor:pointer;padding:3px 5px;border-radius:4px;font-size:14px;line-height:1;transition:color .14s}
+.step-del:hover{color:#c04040}
+.steps-add{width:100%;margin-top:6px;padding:5px;background:none;border:1px dashed var(--b);border-radius:var(--rs);color:var(--t3);font-family:var(--fn);font-size:12px;cursor:pointer;transition:all .14s}
+.steps-add:hover{border-color:var(--ac);color:var(--ac)}
+.steps-presets{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.preset-btn{font-family:var(--mo);font-size:10px;padding:3px 8px;background:var(--bg-i);border:1px solid var(--b);border-radius:20px;cursor:pointer;color:var(--t3);transition:all .14s}
+.preset-btn:hover{border-color:var(--ac);color:var(--ac);background:var(--acb)}
+
+.rw{display:none}.rw.on{display:block}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.chip{font-family:var(--mo);font-size:10.5px;background:var(--acb);border:1px solid var(--acd);color:var(--ac);border-radius:20px;padding:3px 10px}
+.chip strong{font-weight:600}
+.rc{background:var(--bg-c);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;box-shadow:var(--sm)}
+.rh{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--bl);background:var(--bg-th)}
+.rtit{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.ctsv{font-family:var(--mo);font-size:10.5px;color:var(--t3);background:var(--bg-i);border:1px solid var(--b);border-radius:var(--rs);padding:4px 11px;cursor:pointer;transition:all .14s}
+.ctsv:hover{color:var(--ac);border-color:var(--acd);background:var(--acb)}
+.tsc{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{background:var(--bg-th);padding:9px 13px;text-align:right;font-family:var(--mo);font-size:10.5px;font-weight:500;color:var(--t2);border-bottom:1px solid var(--b);white-space:nowrap;user-select:none}
+thead th:first-child{text-align:left}
+thead th.cc{cursor:pointer}
+thead th.cc:hover{color:var(--ac);background:var(--acb)}
+.ch{display:block;font-size:9px;color:var(--t3);font-weight:400;margin-top:1px;font-family:var(--fn);letter-spacing:0}
+tbody tr{transition:background .1s}
+tbody tr:nth-child(even){background:var(--bg-alt)}
+tbody tr:hover{background:var(--acd)}
+tbody td{padding:8px 13px;text-align:right;border-bottom:1px solid var(--bl);font-family:var(--mo);font-size:12px;color:var(--t)}
+tbody td:first-child{text-align:left;font-family:var(--fn);font-size:12px;color:var(--t2);font-weight:500}
+tbody tr:last-child td{border-bottom:none}
+.mu{color:var(--t3)}.hi{color:var(--ac);font-weight:500}
+.ca{padding:16px;border-top:1px solid var(--bl)}
+.cl{font-size:11px;color:var(--t3);margin-bottom:10px;font-family:var(--mo);letter-spacing:.04em;text-transform:uppercase}
+canvas{display:block;max-height:255px}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--bl);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+footer span{font-family:var(--mo);font-size:10.5px;color:var(--t3)}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ac);color:#fff;padding:9px 16px;border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:0 6px 20px rgba(42,85,56,.32);opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;z-index:9999}
+.toast.show{opacity:1;transform:translateY(0)}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.anim{animation:fu .28s ease}
+</style>
+</head>
+<body>
+<a class="home-btn" href="https://geocalculator.ru/index.html" title="На главную">🏠</a>
+<div class="wrap">
+<header>
+  <div class="hl">
+    <div class="hbadge">Geocalculator &middot; Геологические расчеты онлайн</div>
+    <h1>Компрессия <span>&amp;</span> Срез грунта</h1>
+     <p class="hsub"; style="color: #ff0000;"><b><u>ВАЖНО!</u> Представленные данные носят исключительно вспомогательный и информационный характер и не претендуют на достоверность. Модель представляет собой гипотетическое поведение грунта при выбранных условиях и характеристиках.</br></p>
+  </div>
+  <div class="hinfo">
+    <strong>e₀</strong> — исходный коэффициент пористости<br>
+    <strong>IL</strong> — показатель текучести<br>
+    <strong>E</strong> — одометрический модуль деформации<br>
+    <strong>τ, φ, c</strong> — параметры прочности
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="swTab('comp',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+    Компрессионное сжатие
+  </button>
+  <button class="tab" onclick="swTab('shear',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20L20 4M4 4l16 16"/><circle cx="8" cy="8" r="2"/><circle cx="16" cy="16" r="2"/></svg>
+    Срез грунта
+  </button>
+</div>
+
+<!-- ═══ COMPRESSION ═══ -->
+<div id="sec-comp" class="sec on">
+  <div class="two-col">
+    <div class="panel">
+      <div class="ph">Тип грунта</div>
+      <div class="field">
+        <label>Вид грунта</label>
+        <select id="ct" onchange="ctChange()">
+          <option value="sand">Песок</option>
+          <option value="sl">Супесь</option>
+          <option value="loam" selected>Суглинок</option>
+          <option value="clay">Глина</option>
+        </select>
+      </div>
+      <div class="field" id="cil-w">
+        <label>Показатель текучести IL</label>
+        <input type="number" id="cil" value="0.37" step="0.01" min="-0.5" max="2.0" oninput="updateCIL()">
+        <div class="ildsp on" id="cil-lbl"></div>
+      </div>
+
+      <div class="div"></div>
+      <div class="ph">Параметры образца</div>
+      <div class="r2">
+        <div class="field"><label>Высота, см</label><input type="number" id="ch" value="2.04" step="0.01" min="0.5"></div>
+        <div class="field"><label>Площадь, см²</label><input type="number" id="carea" value="40.13" step="0.01" min="1"></div>
+      </div>
+
+      <div class="div"></div>
+      <div class="ph">Механические характеристики</div>
+      <div class="field"><label>Исходный коэффициент пористости e₀</label><input type="number" id="ce0" value="0.595" step="0.001" min="0.1" max="2.0"></div>
+      <div class="field"><label>Средний модуль деформации E, МПа</label><input type="number" id="cEt" value="8.5" step="0.1" min="0.1"></div>
+
+      <div class="div"></div>
+      <div class="ph">Ступени нагрузки, МПа</div>
+      <div class="steps-presets">
+        <button class="preset-btn" onclick="setPreset('auto')">Авто (×2)</button>
+        <button class="preset-btn" onclick="setPreset('std025')">0.025→0.8</button>
+        <button class="preset-btn" onclick="setPreset('std05')">0.05→1.6</button>
+        <button class="preset-btn" onclick="setPreset('std01')">0.1→3.2</button>
+        <button class="preset-btn" onclick="setPreset('custom60')">→0.6 (по опыту)</button>
+      </div>
+      <div class="steps-box" id="steps-box"></div>
+
+      <button class="cbtn" onclick="calcComp()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Рассчитать
+      </button>
+    </div>
+
+    <div id="crw" class="rw">
+      <div class="chips" id="cchips"></div>
+      <div class="rc anim">
+        <div class="rh"><span class="rtit">Компрессионные характеристики</span><button class="ctsv" onclick="cpComp()">Копировать TSV</button></div>
+        <div class="tsc">
+          <table>
+            <thead><tr>
+              <th>Ступень</th>
+              <th class="cc" onclick="cpCol('cp')">σ, МПа<span class="ch">↓ копировать</span></th>
+              <th class="cc" onclick="cpCol('cd')">Δh, мм<span class="ch">↓ копировать</span></th>
+              <th class="cc" onclick="cpCol('ce')">e<span class="ch">↓ копировать</span></th>
+              <th class="cc" onclick="cpCol('cm')">m₀, МПа⁻¹<span class="ch">↓ копировать</span></th>
+              <th class="cc" onclick="cpCol('cE')">E, МПа<span class="ch">↓ копировать</span></th>
+              <th class="cc" onclick="cpCol('ceps')">ε<span class="ch">↓ копировать</span></th>
+            </tr></thead>
+            <tbody id="ctb"></tbody>
+          </table>
+        </div>
+        <div class="ca">
+          <div class="cl">σ (МПа) → ε (относит. вертикальная деформация)</div>
+          <canvas id="cc" height="240"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SHEAR ═══ -->
+<div id="sec-shear" class="sec">
+  <div class="two-col">
+    <div class="panel">
+      <div class="ph">Тип грунта</div>
+      <div class="field">
+        <label>Вид грунта</label>
+        <select id="st" onchange="stChange()">
+          <option value="sand">Песок</option>
+          <option value="sl">Супесь</option>
+          <option value="loam" selected>Суглинок</option>
+          <option value="clay">Глина</option>
+        </select>
+      </div>
+      <div class="field" id="sil-w">
+        <label>Показатель текучести IL</label>
+        <input type="number" id="sil" value="0.37" step="0.01" min="-0.5" max="2.0" oninput="sAutoFill()">
+        <div class="ildsp on" id="sil-lbl"></div>
+      </div>
+
+      <div class="div"></div>
+      <div class="ph">Характеристики прочности</div>
+      <div class="r2">
+        <div class="field"><label>Угол трения φ, °</label><input type="number" id="sphi" value="19.0" step="0.1" min="0" max="45"></div>
+        <div class="field"><label>Сцепление c, МПа</label><input type="number" id="sc" value="0.027" step="0.001" min="0"></div>
+      </div>
+
+      <div class="div"></div>
+      <div class="ph">Давления уплотнения</div>
+      <div class="r2">
+        <div class="field"><label>P₁, МПа</label><input type="number" id="sp1" value="0.100" step="0.025" min="0.025"></div>
+        <div class="field"><label>P₂, МПа</label><input type="number" id="sp2" value="0.200" step="0.025" min="0.025"></div>
+      </div>
+      <div class="field" style="max-width:calc(50% - 5px)">
+        <label>P₃, МПа</label>
+        <input type="number" id="sp3" value="0.300" step="0.025" min="0.025">
+      </div>
+
+      <button class="cbtn" onclick="calcShear()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Рассчитать
+      </button>
+    </div>
+
+    <div id="srw" class="rw">
+      <div class="chips" id="schips"></div>
+      <div class="rc anim">
+        <div class="rh"><span class="rtit">Результаты испытания на срез</span><button class="ctsv" onclick="cpShear()">Копировать TSV</button></div>
+        <div class="tsc">
+          <table>
+            <thead><tr>
+              <th>Опыт</th>
+              <th class="cc" onclick="cpCol('sp')">P упл., МПа<span class="ch">↓ копировать</span></th>
+              <th class="cc" onclick="cpCol('sn')">σ норм., МПа<span class="ch">↓ копировать</span></th>
+              <th class="cc" onclick="cpCol('sr')">τ, МПа<span class="ch">↓ копировать</span></th>
+              <th>tg φ (рег.)</th><th>φ, °</th><th>c, МПа</th>
+            </tr></thead>
+            <tbody id="stb"></tbody>
+          </table>
+        </div>
+        <div class="ca">
+          <div class="cl">σ (нормальное давление) → τ (сопротивление срезу)</div>
+          <canvas id="sc2" height="240"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>ГОСТ 12248.1-2020 · ГОСТ 12248.4-2020 · ГОСТ 25100-2020</span>
+  <span>Нажмите заголовок столбца → скопировать значения</span>
+</footer>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+const R = (v,d=6) => parseFloat(v.toFixed(d));
+const rnd = (a,b) => a + Math.random()*(b-a);
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ═══════════════════════════════════════════════════════
+// CONSISTENCY / IL
+// ═══════════════════════════════════════════════════════
+function ilLabel(il, type) {
+  if (type === 'sand') return null;
+  if (type === 'sl') {
+    if (il < 0) return 'Твёрдая (IL < 0)';
+    if (il < 1.0) return 'Пластичная (0 ≤ IL < 1.0)';
+    return 'Текучая (IL ≥ 1.0)';
+  }
+  if (il < 0)    return 'Твёрдая (IL < 0)';
+  if (il < 0.25) return 'Полутвёрдая (0 ≤ IL < 0.25)';
+  if (il < 0.50) return 'Тугопластичная (0.25 ≤ IL < 0.50)';
+  if (il < 0.75) return 'Мягкопластичная (0.50 ≤ IL < 0.75)';
+  if (il < 1.0)  return 'Текучепластичная (0.75 ≤ IL < 1.0)';
+  return 'Текучая (IL ≥ 1.0)';
+}
+
+// Auto-fill φ & c from IL (reference from experiments)
+const SREF = {
+  sand: { phi:33, c:0.0 },
+  sl: { get(il){ if(il<0) return{phi:26,c:0.006}; if(il<1) return{phi:21,c:0.010}; return{phi:17,c:0.005}; } },
+  loam: { get(il){
+    if(il<0) return{phi:24,c:0.040}; if(il<0.25) return{phi:22,c:0.033};
+    if(il<0.50) return{phi:19,c:0.027}; if(il<0.75) return{phi:16,c:0.021};
+    if(il<1.0) return{phi:13,c:0.012}; return{phi:10,c:0.006};
+  }},
+  clay: { get(il){
+    if(il<0) return{phi:22,c:0.050}; if(il<0.25) return{phi:19,c:0.042};
+    if(il<0.50) return{phi:16,c:0.033}; if(il<0.75) return{phi:13,c:0.022};
+    if(il<1.0) return{phi:10,c:0.012}; return{phi:7,c:0.006};
+  }}
+};
+
+// ═══════════════════════════════════════════════════════
+// STEPS EDITOR
+// ═══════════════════════════════════════════════════════
+function getP0(type, e0, il) {
+  if (type === 'sand') {
+    if (e0 >= 1.0) return 0.005; if (e0 >= 0.75) return 0.0125;
+    if (e0 > 0.6) return 0.025; return 0.05;
+  }
+  if (il >= 1.0) return 0.005; if (il >= 0.75) return 0.0125;
+  if (il >= 0.50) return 0.025; if (il >= 0.25) return 0.05; return 0.1;
+}
+
+function renderStepsBox(values) {
+  const box = document.getElementById('steps-box');
+  box.innerHTML = '';
+  values.forEach((v, i) => {
+    const row = document.createElement('div');
+    row.className = 'step-row';
+    row.innerHTML = `
+      <span class="step-num">${i+1}</span>
+      <input type="number" class="step-input" value="${v}" step="0.001" min="0.001"
+             oninput="updateStep(${i}, this.value)">
+      <button class="step-del" onclick="deleteStep(${i})" title="Удалить">×</button>`;
+    box.appendChild(row);
+  });
+  const addBtn = document.createElement('button');
+  addBtn.className = 'steps-add';
+  addBtn.textContent = '+ Добавить ступень';
+  addBtn.onclick = addStep;
+  box.appendChild(addBtn);
+}
+
+let steps = [0.025, 0.05, 0.1, 0.2, 0.4, 0.8];
+
+function updateStep(i, val) { steps[i] = parseFloat(val) || steps[i]; }
+function deleteStep(i) { if (steps.length > 1) { steps.splice(i, 1); renderStepsBox(steps); } }
+function addStep() {
+  const last = steps[steps.length - 1] || 0.1;
+  steps.push(parseFloat((last * 2).toFixed(4)));
+  renderStepsBox(steps);
+}
+
+function setPreset(name) {
+  const type = document.getElementById('ct').value;
+  const e0 = parseFloat(document.getElementById('ce0').value) || 0.595;
+  const il = parseFloat(document.getElementById('cil').value) || 0.37;
+  const p0 = getP0(type, e0, il);
+
+  if (name === 'auto') {
+    steps = [p0, p0*2, p0*4, p0*8, p0*16, p0*32].map(v => parseFloat(v.toFixed(4)));
+  } else if (name === 'std025') {
+    steps = [0.025, 0.05, 0.1, 0.2, 0.4, 0.8];
+  } else if (name === 'std05') {
+    steps = [0.05, 0.1, 0.2, 0.4, 0.8, 1.6];
+  } else if (name === 'std01') {
+    steps = [0.1, 0.2, 0.4, 0.8, 1.6, 3.2];
+  } else if (name === 'custom60') {
+    steps = [0.025, 0.05, 0.1, 0.2, 0.3, 0.4, 0.6];
+  }
+  renderStepsBox(steps);
+}
+
+// ═══════════════════════════════════════════════════════
+// TAB / UI INIT
+// ═══════════════════════════════════════════════════════
+function swTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  document.getElementById('sec-' + name).classList.add('on');
+}
+
+function ctChange() {
+  const t = document.getElementById('ct').value;
+  document.getElementById('cil-w').style.display = t === 'sand' ? 'none' : '';
+  updateCIL();
+  // Update auto-preset
+  setPreset('auto');
+}
+
+function updateCIL() {
+  const t = document.getElementById('ct').value;
+  const il = parseFloat(document.getElementById('cil').value);
+  const el = document.getElementById('cil-lbl');
+  const lbl = ilLabel(il, t);
+  if (lbl) { el.textContent = lbl; el.classList.add('on'); } else el.classList.remove('on');
+}
+
+function stChange() {
+  const t = document.getElementById('st').value;
+  document.getElementById('sil-w').style.display = t === 'sand' ? 'none' : '';
+  sAutoFill();
+}
+
+function sAutoFill() {
+  const type = document.getElementById('st').value;
+  const il = parseFloat(document.getElementById('sil').value) || 0;
+  const el = document.getElementById('sil-lbl');
+  const lbl = ilLabel(il, type);
+  if (lbl) { el.textContent = lbl; el.classList.add('on'); } else el.classList.remove('on');
+  const ref = SREF[type];
+  if (!ref) return;
+  const rv = typeof ref.get === 'function' ? ref.get(il) : ref;
+  document.getElementById('sphi').value = rv.phi.toFixed(1);
+  document.getElementById('sc').value = rv.c.toFixed(3);
+}
+
+// Init
+renderStepsBox(steps);
+ctChange();
+stChange();
+
+// ═══════════════════════════════════════════════════════
+// COMPRESSION CALCULATION
+// ═══════════════════════════════════════════════════════
+/*
+  FORMULAS (per user spec + GOST):
+  
+  m0_step1 = (e0 - e1) / (p2 - p1)          ← uses NEXT step pressure difference
+  m0_step_i = (e_{i-1} - e_i) / (p_i - p_{i-1})  for i > 1
+  
+  E_i = (1 + e0) / m0_i
+  
+  ε_i = Δh_i / (h * 10)                      ← Δh is cumulative deformation [mm]
+  
+  GENERATION STRATEGY:
+  - From E_target and E-ratio profile (calibrated from experiments),
+    compute E_i per step.
+  - m0_i = (1 + e0) / E_i
+  - Δe_i computed from m0 (inverse of m0 formula)
+  - Δh_i = cumulative deformation derived from e changes
+  - ε_i = Δh_i / (h * 10)  — consistent with Δh
+*/
+
+// E-ratio profile (normalized, 6 steps)
+// From analysis of ~40 experimental specimens
+const E_RATIOS_6 = [0.245, 0.480, 0.708, 1.038, 1.545, 1.985];
+
+// For arbitrary N steps: interpolate ratios based on log-pressure
+// Use a power-law: ratio(p) ~ (p/p_ref)^beta where beta controls steepness
+// beta calibrated from data: soft soils ~0.65, hard soils ~0.80
+function getEbeta(il) {
+  if (il === null) return 0.72;
+  if (il < 0) return 0.85; if (il < 0.25) return 0.80;
+  if (il < 0.50) return 0.72; if (il < 0.75) return 0.65;
+  if (il < 1.0) return 0.60; return 0.55;
+}
+
+function computeERatios(pressures, il) {
+  // pressures: array of N pressures (step values, no zero)
+  const N = pressures.length;
+  const beta = getEbeta(il);
+  const pRef = pressures[Math.floor(N/2)]; // midpoint pressure as reference
+  const rawRatios = pressures.map(p => Math.pow(p / pRef, beta));
+  const avg = rawRatios.reduce((a,b) => a+b, 0) / N;
+  return rawRatios.map(r => r / avg); // normalize so mean = 1.0
+}
+
+// Total target eps at last pressure — calibrated from experimental data
+// Formula: eps_total ~ C * (1+e0) * p_max / E_target (approx)
+// But we derive it implicitly from the E profile + m0 calculation
+// The total eps will naturally emerge from integrating m0_i * dp_i
+
+let cChart = null, cRows = [];
+
+function calcComp() {
+  const type = document.getElementById('ct').value;
+  const ilRaw = parseFloat(document.getElementById('cil').value);
+  const il = type === 'sand' ? null : (isNaN(ilRaw) ? 0.37 : ilRaw);
+  const e0 = parseFloat(document.getElementById('ce0').value) || 0.595;
+  const Etgt = parseFloat(document.getElementById('cEt').value) || 8.5;
+  const h = parseFloat(document.getElementById('ch').value) || 2.04;
+
+  const pressures = steps.map(s => parseFloat(s)).filter(p => p > 0);
+  if (pressures.length === 0) { toast('Добавьте хотя бы одну ступень'); return; }
+  const N = pressures.length;
+
+  // Compute E-ratio profile and add small jitter (±7%)
+  const eRatios = computeERatios(pressures, il);
+  const jittered = eRatios.map(r => r * (1 + rnd(-0.07, 0.07)));
+  const avgJ = jittered.reduce((a,b) => a+b, 0) / N;
+  const eRatiosFinal = jittered.map(r => r / avgJ); // mean stays 1.0
+
+  // Step 0: initial state
+  const rows = [];
+  rows.push({ step: '0 (нач.)', p: 0, dh: null, e: e0, m0: null, Ev: null, eps: null });
+
+  let eVal = e0;
+  for (let i = 0; i < N; i++) {
+    const p = pressures[i];
+    const ePrev = rows[i].e;
+
+    // E_i from target and ratio profile
+    const Ei = Etgt * eRatiosFinal[i];
+
+    // m0 = (1+e0) / E_i  (derived from E formula: E=(1+e0)/m0)
+    const m0 = (1 + e0) / Ei;
+
+    // Δe from m0: m0 = (e_prev - e_cur) / dp  → e_cur = e_prev - m0*dp
+    // dp for e-update: use actual pressure difference from previous
+    const prevP = i === 0 ? 0 : pressures[i-1];
+    const dpForE = p - prevP;
+    eVal = ePrev - m0 * dpForE;
+    if (eVal < 0.05) eVal = 0.05; // physical lower bound
+
+    // Δh cumulative [mm]: from e change → exact physical formula
+    const dh = ((e0 - eVal) / (1 + e0)) * h * 10;
+
+    // ε = Δh / (h * 10)  — as specified
+    const eps = dh / (h * 10);
+
+    rows.push({
+      step: String(i + 1), p,
+      dh: R(dh, 2), e: R(eVal, 6), m0: R(m0, 6), Ev: R(Ei, 3), eps: R(eps, 6)
+    });
+  }
+
+  // ── Re-compute m0 with CORRECT formula per user spec ──
+  // Step 1: m0 = (e0 - e1) / (p2 - p1)
+  // Step i>1: m0 = (e_{i-1} - e_i) / (p_i - p_{i-1})
+  // E = (1 + e0) / m0
+  // ε = dh / (h*10)
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const ePrev = rows[i-1].e;
+    let m0;
+    if (i === 1 && rows.length > 2) {
+      // Step 1: denominator = p2 - p1
+      const dp = rows[2].p - rows[1].p;
+      m0 = dp > 0 ? (e0 - r.e) / dp : null;
+    } else {
+      const dp = r.p - rows[i-1].p;
+      m0 = dp > 0 ? (ePrev - r.e) / dp : null;
+    }
+    const Ev = m0 && m0 > 0 ? R((1 + e0) / m0, 3) : null;
+    r.m0 = m0 ? R(m0, 6) : null;
+    r.Ev = Ev;
+    r.eps = R(r.dh / (h * 10), 6);
+  }
+
+  cRows = rows;
+  renderCTable(rows);
+  renderCChart(rows);
+
+  const ilStr = il !== null ? il.toFixed(3) : '—';
+  const cons = il !== null ? (ilLabel(il, type) || '—').split(' ')[0] : '—';
+  const lastRow = rows[rows.length - 1];
+  document.getElementById('cchips').innerHTML = [
+    `IL: <strong>${ilStr}</strong>`,
+    `Консистенция: <strong>${cons}</strong>`,
+    `Ступеней: <strong>${N}</strong>`,
+    `E цел.: <strong>${Etgt} МПа</strong>`,
+    `e₀: <strong>${e0}</strong>`,
+    `Δh_max: <strong>${lastRow.dh} мм</strong>`,
+    `ε_max: <strong>${lastRow.eps}</strong>`
+  ].map(s => `<span class="chip">${s}</span>`).join('');
+
+  document.getElementById('crw').classList.add('on');
+}
+
+function renderCTable(rows) {
+  document.getElementById('ctb').innerHTML = rows.map((r, i) => `
+    <tr>
+      <td>${r.step}</td>
+      <td data-col="cp">${r.p.toFixed(4)}</td>
+      <td data-col="cd" class="${r.dh === null ? 'mu' : ''}">${r.dh === null ? '—' : r.dh.toFixed(2)}</td>
+      <td data-col="ce">${r.e.toFixed(6)}</td>
+      <td data-col="cm" class="${r.m0 === null ? 'mu' : ''}">${r.m0 === null ? '—' : r.m0.toFixed(6)}</td>
+      <td data-col="cE" class="${r.Ev === null ? 'mu' : 'hi'}">${r.Ev === null ? '—' : r.Ev.toFixed(3)}</td>
+      <td data-col="ceps" class="${r.eps === null ? 'mu' : ''}">${r.eps === null ? '—' : r.eps.toFixed(6)}</td>
+    </tr>`).join('');
+}
+
+function renderCChart(rows) {
+  const ctx = document.getElementById('cc').getContext('2d');
+  if (cChart) cChart.destroy();
+  const pts = rows.filter(r => r.eps !== null).map(r => ({ x: r.p, y: r.eps }));
+  cChart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets: [{ label: 'ε', data: pts,
+      borderColor: '#2a5538', backgroundColor: 'rgba(42,85,56,0.07)',
+      pointRadius: 5, pointHoverRadius: 7, tension: 0.25,
+      fill: true, borderWidth: 2, pointBackgroundColor: '#2a5538' }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: c => `σ = ${c.parsed.x.toFixed(4)} МПа   ε = ${c.parsed.y.toFixed(6)}` } } },
+      scales: {
+        x: { type: 'linear',
+          title: { display: true, text: 'Вертикальное давление σ, МПа', font: { size: 11 }, color: '#8e8e86' },
+          grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#8e8e86', font: { family: "'JetBrains Mono'" } } },
+        y: { title: { display: true, text: 'Относительная деформация ε', font: { size: 11 }, color: '#8e8e86' },
+          grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#8e8e86', font: { family: "'JetBrains Mono'" } } }
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// SHEAR CALCULATION
+// ═══════════════════════════════════════════════════════
+/*
+  CORRECT APPROACH:
+  Three points τ_i = tgφ * σ_i + c + ε_i, where ε_i is random scatter.
+  
+  We want: the regression through the 3 scattered points gives EXACTLY:
+    tg φ_reg = tg φ_input
+    c_reg = c_input
+  
+  To ensure this, we use constrained scatter:
+  Scatter must satisfy: sum(ε_i) = 0  AND  sum(ε_i * σ_i) = 0
+  This guarantees the regression coefficients are preserved exactly.
+  
+  For 3 points with pressures p1, p2, p3:
+  Generate ε1, ε2 freely; compute ε3 = -(ε1 + ε2) is NOT enough for both constraints.
+  
+  Full constraint: 2 equations, 3 unknowns (ε1, ε2, ε3):
+    ε1 + ε2 + ε3 = 0
+    ε1*p1 + ε2*p2 + ε3*p3 = 0
+  
+  Choose ε1 freely, solve:
+    ε1 + ε2 + ε3 = 0  → ε3 = -ε1 - ε2
+    ε1*p1 + ε2*p2 + (-ε1-ε2)*p3 = 0
+    ε1*(p1-p3) + ε2*(p2-p3) = 0
+    ε2 = -ε1*(p1-p3)/(p2-p3)
+    ε3 = -ε1 - ε2
+*/
+
+let sChart = null, sRows = [], sReg = {};
+
+function calcShear() {
+  const phi = parseFloat(document.getElementById('sphi').value) || 16;
+  const c   = parseFloat(document.getElementById('sc').value) || 0.03;
+  const tgPhi = Math.tan(phi * Math.PI / 180);
+  const ps = [
+    parseFloat(document.getElementById('sp1').value) || 0.1,
+    parseFloat(document.getElementById('sp2').value) || 0.2,
+    parseFloat(document.getElementById('sp3').value) || 0.3
+  ];
+  const [p1, p2, p3] = ps;
+
+  // Scatter magnitude: realistic from experimental residuals ~1-3% of τ value
+  const type = document.getElementById('st').value;
+  const il = type === 'sand' ? null : (parseFloat(document.getElementById('sil').value) || 0);
+  const scPct = il === null ? 0.025 :
+    il < 0 ? 0.020 : il < 0.25 ? 0.025 : il < 0.5 ? 0.030 :
+    il < 0.75 ? 0.038 : il < 1.0 ? 0.045 : 0.055;
+
+  // Reference τ values (on Coulomb line)
+  const tau = ps.map(p => tgPhi * p + c);
+  const scAbs = tau.reduce((a,b) => a+b, 0) / 3 * scPct;
+
+  // Generate constrained scatter so regression gives EXACT φ and c
+  // ε1 random, ε2 and ε3 computed from constraints
+  let e1 = rnd(-scAbs, scAbs);
+  let e2 = -e1 * (p1 - p3) / (p2 - p3);
+  let e3 = -e1 - e2;
+
+  // Scale if scatter exceeds budget
+  const maxSc = Math.max(Math.abs(e1), Math.abs(e2), Math.abs(e3));
+  if (maxSc > scAbs * 1.5) {
+    const scale = (scAbs * 1.5) / maxSc;
+    e1 *= scale; e2 *= scale; e3 *= scale;
+  }
+
+  const epsilons = [e1, e2, e3];
+  const rows = ps.map((p, i) => ({
+    idx: i + 1,
+    precomp: p,
+    normal: p,
+    resist: R(tau[i] + epsilons[i], 6)
+  }));
+
+  // Regression (should give exactly phi & c input, within floating point)
+  const n = 3;
+  const sp = ps.reduce((a,b) => a+b, 0) / n;
+  const st = rows.map(r => r.resist).reduce((a,b) => a+b, 0) / n;
+  const num = ps.reduce((s, p, i) => s + (p - sp) * (rows[i].resist - st), 0);
+  const den = ps.reduce((s, p) => s + (p - sp) ** 2, 0);
+  const tgFit = num / den;
+  const cFit = st - tgFit * sp;
+  const phiFit = Math.atan(tgFit) * 180 / Math.PI;
+
+  sRows = rows;
+  sReg = { tg: tgFit, c: cFit, phi: phiFit };
+
+  renderSTable(rows, sReg);
+  renderSChart(rows, sReg, ps);
+
+  document.getElementById('schips').innerHTML = [
+    `tg φ (ввод): <strong>${tgPhi.toFixed(4)}</strong>`,
+    `tg φ (рег.): <strong>${tgFit.toFixed(4)}</strong>`,
+    `φ (рег.): <strong>${phiFit.toFixed(2)}°</strong>`,
+    `c (рег.): <strong>${cFit.toFixed(4)} МПа</strong>`
+  ].map(s => `<span class="chip">${s}</span>`).join('');
+
+  document.getElementById('srw').classList.add('on');
+}
+
+function renderSTable(rows, reg) {
+  document.getElementById('stb').innerHTML = rows.map((r, i) => `
+    <tr>
+      <td>Опыт ${r.idx}</td>
+      <td data-col="sp">${r.precomp.toFixed(3)}</td>
+      <td data-col="sn">${r.normal.toFixed(3)}</td>
+      <td data-col="sr" class="hi">${r.resist.toFixed(6)}</td>
+      <td class="${i > 0 ? 'mu' : ''}">${i === 0 ? reg.tg.toFixed(6) : '—'}</td>
+      <td class="${i > 0 ? 'mu' : ''}">${i === 0 ? reg.phi.toFixed(4) + '°' : '—'}</td>
+      <td class="${i > 0 ? 'mu' : ''}">${i === 0 ? reg.c.toFixed(6) : '—'}</td>
+    </tr>`).join('');
+}
+
+function renderSChart(rows, reg, ps) {
+  const ctx = document.getElementById('sc2').getContext('2d');
+  if (sChart) sChart.destroy();
+  const pMax = Math.max(...ps) * 1.25;
+  const lineData = [{ x: 0, y: reg.c }, { x: pMax, y: reg.tg * pMax + reg.c }];
+  sChart = new Chart(ctx, {
+    type: 'scatter',
+    data: { datasets: [
+      { label: 'Опытные точки', data: rows.map(r => ({ x: r.normal, y: r.resist })),
+        backgroundColor: '#2a5538', pointRadius: 8, pointHoverRadius: 10, order: 1 },
+      { label: 'Огибающая Кулона (φ=' + reg.phi.toFixed(1) + '°, c=' + reg.c.toFixed(4) + ')',
+        data: lineData, type: 'line', borderColor: '#b09070',
+        pointRadius: 0, borderWidth: 2, borderDash: [5, 3], tension: 0, order: 0 }
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, labels: { color: '#555550', font: { size: 12 }, boxWidth: 12 } },
+        tooltip: { callbacks: { label: c => c.datasetIndex === 0
+          ? `σ = ${c.parsed.x.toFixed(3)} МПа   τ = ${c.parsed.y.toFixed(5)} МПа`
+          : '' } }
+      },
+      scales: {
+        x: { type: 'linear', min: 0,
+          title: { display: true, text: 'Нормальное давление σ, МПа', font: { size: 11 }, color: '#8e8e86' },
+          grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#8e8e86', font: { family: "'JetBrains Mono'" } } },
+        y: { min: 0,
+          title: { display: true, text: 'Сопротивление срезу τ, МПа', font: { size: 11 }, color: '#8e8e86' },
+          grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#8e8e86', font: { family: "'JetBrains Mono'" } } }
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// COPY  (decimal separator = comma for Excel RU)
+// ═══════════════════════════════════════════════════════
+function toComma(v) {
+  if (v === null || v === undefined || v === '') return '';
+  return String(v).replace('.', ',');
+}
+function numCell(val, digits) {
+  if (val === null || val === undefined) return '';
+  return toComma(val.toFixed(digits));
+}
+
+function cpCol(col) {
+  const vals = [...document.querySelectorAll(`td[data-col="${col}"]`)]
+    .map(td => td.textContent.trim())
+    .filter(v => v !== '—')
+    .map(v => v.replace('.', ','));
+  navigator.clipboard.writeText(vals.join('\n')).then(() => toast('✓ Столбец скопирован'));
+}
+
+function cpComp() {
+  if (!cRows.length) return;
+  const hdr = ['Ступень', 'σ МПа', 'Δh мм', 'e', 'm0 МПа-1', 'E МПа', 'ε'];
+  const body = cRows.map(r => [
+    r.step,
+    numCell(r.p, 4),
+    r.dh === null ? '' : numCell(r.dh, 2),
+    numCell(r.e, 6),
+    r.m0 === null ? '' : numCell(r.m0, 6),
+    r.Ev === null ? '' : numCell(r.Ev, 3),
+    r.eps === null ? '' : numCell(r.eps, 6)
+  ].join('\t'));
+  navigator.clipboard.writeText([hdr.join('\t'), ...body].join('\n'))
+    .then(() => toast('✓ Таблица (TSV) скопирована'));
+}
+
+function cpShear() {
+  if (!sRows.length) return;
+  const hdr = ['Опыт', 'P упл. МПа', 'σ норм. МПа', 'τ МПа', 'tg φ', 'φ°', 'c МПа'];
+  const body = sRows.map((r, i) => [
+    `Опыт ${r.idx}`,
+    numCell(r.precomp, 3),
+    numCell(r.normal, 3),
+    numCell(r.resist, 6),
+    i === 0 ? numCell(sReg.tg, 6) : '',
+    i === 0 ? numCell(sReg.phi, 4) + '°' : '',
+    i === 0 ? numCell(sReg.c, 6) : ''
+  ].join('\t'));
+  navigator.clipboard.writeText([hdr.join('\t'), ...body].join('\n'))
+    .then(() => toast('✓ Таблица (TSV) скопирована'));
+}
+</script>
+</body>
+</html>

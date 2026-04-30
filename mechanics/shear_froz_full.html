@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Испытание на срез — мерзлый грунт</title>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+.home-btn {
+    position: fixed;
+    top: 16px; right: 16px;
+    z-index: 100;
+    width: 44px; height: 44px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all .18s;
+    text-decoration: none;
+}
+.home-btn:hover {
+    background: var(--accent-bg);
+    border-color: var(--accent-dim);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+:root{
+  --bg:#f3f1ec;--bg-c:#fafaf7;--bg-i:#fff;--bg-th:#eeece7;--bg-alt:#f5f3ee;
+  --ac:#2a5538;--acl:#3d7a52;--acd:#cfe0d6;--acb:#e8f2ec;
+  --t:#1a1a17;--t2:#555550;--t3:#8e8e86;
+  --b:#d8d5cd;--bl:#e6e3db;
+  --s:0 1px 4px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sm:0 4px 14px rgba(0,0,0,.08);
+  --r:10px;--rs:6px;--rl:14px;
+  --fn:'Golos Text',system-ui,sans-serif;--mo:'JetBrains Mono',monospace;
+  /* semantic */
+  --fail-bg:#fdecea;--fail-t:#a32d2d;--fail-row:rgba(163,45,45,.04);
+  --jump-bg:#deeaf8;--jump-t:#0c447c;--jump-row:rgba(12,68,124,.04);
+  --pref-bg:#faeeda;--pref-t:#854f0b;--pref-row:rgba(133,79,11,.04);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fn);background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden;position:relative}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(90,80,60,.17) 1px,transparent 1px);background-size:24px 24px;pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;left:0;top:0;bottom:0;width:5px;background:repeating-linear-gradient(180deg,#85a36e 0 10px,#c09a55 10px 24px,#a87c5a 24px 42px,#766050 42px 56px);opacity:.55;z-index:10}
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:28px 22px 60px 32px}
+
+/* ── header ── */
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:32px;flex-wrap:wrap}
+.hl{flex:1}
+.hbadge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mo);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ac);background:var(--acb);border:1px solid var(--acd);border-radius:20px;padding:3px 10px;margin-bottom:8px}
+.hbadge::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--ac)}
+h1{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.2}
+h1 span{color:var(--ac)}
+.hsub{font-size:13px;color:var(--t2);margin-top:5px;max-width:520px;line-height:1.6}
+.hinfo{font-family:var(--mo);font-size:10.5px;color:var(--t3);background:var(--bg-c);border:1px solid var(--b);border-radius:var(--rs);padding:9px 14px;line-height:1.9;box-shadow:var(--s)}
+.hinfo strong{color:var(--t);font-weight:500}
+
+/* ── panel ── */
+.panel{background:var(--bg-c);border:1px solid var(--b);border-radius:var(--rl);padding:22px 20px;box-shadow:var(--s);margin-bottom:18px}
+.ph{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.ph::after{content:'';flex:1;height:1px;background:var(--bl)}
+.div{height:1px;background:var(--bl);margin:18px 0}
+
+/* ── grids ── */
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.r4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+@media(max-width:860px){.r4{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.r2,.r3{grid-template-columns:1fr}}
+
+/* ── fields ── */
+.field label,.lbl{display:block;font-size:11.5px;color:var(--t2);margin-bottom:4px;font-weight:500}
+.hint{font-size:11px;color:var(--t3);margin-top:4px;line-height:1.4}
+input[type=number],select{width:100%;background:var(--bg-i);border:1px solid var(--b);border-radius:var(--rs);padding:7px 10px;font-family:var(--mo);font-size:13px;color:var(--t);outline:none;transition:border-color .14s;-webkit-appearance:none;appearance:none}
+input:focus,select:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(42,85,56,.1)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238e8e86' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;padding-right:28px;cursor:pointer}
+
+/* radio */
+.radio-row{display:flex;gap:16px;padding-top:2px}
+.radio-row label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--t2);cursor:pointer;font-weight:400}
+input[type=radio]{accent-color:var(--ac);width:14px;height:14px;cursor:pointer}
+
+/* ── warn / info ── */
+.warn{background:var(--pref-bg);color:var(--pref-t);border:1px solid #e8cfa0;border-radius:var(--rs);padding:8px 12px;font-size:12px;margin-top:12px;display:none;font-family:var(--mo)}
+.info-box{background:var(--jump-bg);color:var(--jump-t);border:1px solid #b8d4f0;border-radius:var(--rs);padding:10px 14px;font-size:12px;margin-bottom:16px;line-height:1.75;font-family:var(--mo);white-space:pre-line}
+
+/* ── buttons ── */
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn-calc{flex:1;min-width:140px;padding:10px;background:var(--ac);color:#fff;border:none;border-radius:var(--rs);font-family:var(--fn);font-size:14px;font-weight:600;cursor:pointer;transition:all .17s;display:flex;align-items:center;justify-content:center;gap:7px;letter-spacing:-.01em}
+.btn-calc:hover{background:var(--acl);transform:translateY(-1px);box-shadow:0 4px 14px rgba(42,85,56,.28)}
+.btn-calc:active{transform:translateY(0)}
+.btn-sec{padding:9px 18px;background:var(--bg-c);color:var(--t2);border:1px solid var(--b);border-radius:var(--rs);font-family:var(--fn);font-size:13px;cursor:pointer;transition:all .14s}
+.btn-sec:hover{background:var(--bg-alt);border-color:var(--ac);color:var(--ac)}
+
+/* ── metric cards ── */
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:720px){.metrics-row{grid-template-columns:1fr 1fr}}
+.metric{background:var(--bg-alt);border:1px solid var(--bl);border-radius:var(--rs);padding:12px 14px}
+.metric.danger{background:var(--fail-bg);border-color:#e8b8b8}
+.metric .mv{font-size:17px;font-weight:600;font-family:var(--mo);color:var(--t);letter-spacing:-.02em;margin-bottom:3px}
+.metric.danger .mv{color:var(--fail-t)}
+.metric .ml{font-size:11px;color:var(--t3);font-family:var(--mo)}
+.metric.danger .ml{color:var(--fail-t);opacity:.8}
+
+/* ── compare cards ── */
+.cmp-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+@media(max-width:560px){.cmp-row{grid-template-columns:1fr}}
+.cmp-card{background:var(--bg-alt);border:1px solid var(--bl);border-radius:var(--rs);padding:14px 16px}
+.cmp-card .cv{font-family:var(--mo);font-size:22px;font-weight:600;color:var(--t);margin:6px 0 4px}
+.cmp-card .cl{font-size:11.5px;color:var(--t3)}
+
+/* ── legend ── */
+.leg{display:flex;gap:14px;margin-bottom:12px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)}
+.leg-line{width:22px;height:3px;border-radius:2px;flex-shrink:0}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ── chart ── */
+.chart-wrap{background:var(--bg-alt);border-radius:var(--rs);padding:14px;border:1px solid var(--bl)}
+.chart-wrap canvas{display:block;max-height:340px}
+
+/* ── results table ── */
+.rc{background:var(--bg-c);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;box-shadow:var(--sm)}
+.rh{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--bl);background:var(--bg-th);flex-wrap:wrap;gap:8px}
+.rtit{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.rh-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ctsv,.ccsv{font-family:var(--mo);font-size:10.5px;color:var(--t3);background:var(--bg-i);border:1px solid var(--b);border-radius:var(--rs);padding:4px 11px;cursor:pointer;transition:all .14s}
+.ctsv:hover,.ccsv:hover{color:var(--ac);border-color:var(--acd);background:var(--acb)}
+.copy-hint{font-size:11px;color:var(--t3);font-family:var(--mo)}
+
+.tsc{overflow-x:auto;max-height:360px;overflow-y:auto}
+table.rt{width:100%;border-collapse:collapse;font-size:12px}
+table.rt thead{position:sticky;top:0;z-index:2}
+table.rt thead th{background:var(--bg-th);padding:8px 10px;text-align:right;font-family:var(--mo);font-size:10px;font-weight:500;color:var(--t2);border-bottom:1px solid var(--b);white-space:nowrap;user-select:none;letter-spacing:.03em;text-transform:uppercase}
+table.rt thead th:first-child,table.rt thead th:nth-child(2){text-align:left}
+table.rt thead th.cc{cursor:pointer}
+table.rt thead th.cc:hover{color:var(--ac);background:var(--acb)}
+table.rt thead th.copied{color:var(--ac)}
+.ch{display:block;font-size:8.5px;color:var(--t3);font-weight:400;margin-top:1px;font-family:var(--fn);letter-spacing:0;text-transform:none}
+table.rt tbody tr{transition:background .08s}
+table.rt tbody tr:hover{background:var(--acd)}
+table.rt tbody td{padding:5px 10px;text-align:right;border-bottom:1px solid var(--bl);font-family:var(--mo);font-size:11.5px;color:var(--t2)}
+table.rt tbody td:first-child,table.rt tbody td:nth-child(2){text-align:left;font-family:var(--fn);font-size:11.5px;color:var(--t3)}
+table.rt tbody tr:last-child td{border-bottom:none}
+/* row states */
+tr.r-fail td{color:var(--fail-t)!important;background:var(--fail-bg);font-weight:600}
+tr.r-post td{opacity:.45}
+tr.r-jump td{color:var(--jump-t)!important;background:var(--jump-bg);font-weight:500}
+tr.r-pref td{color:var(--pref-t)!important;background:var(--pref-bg)}
+
+/* ── footer ── */
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--bl);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+footer span{font-family:var(--mo);font-size:10.5px;color:var(--t3)}
+
+/* ── toast ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ac);color:#fff;padding:9px 16px;border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:0 6px 20px rgba(42,85,56,.32);opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;z-index:9999}
+.toast.show{opacity:1;transform:translateY(0)}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.anim{animation:fu .3s ease}
+</style>
+</head>
+<body>
+<a class="home-btn" href="https://geocalculator.ru/index.html" title="На главную">🏠</a>
+<div class="wrap">
+
+<!-- HEADER -->
+<header>
+  <div class="hl">
+    <div class="hbadge">Geocalculator &middot; Геологические расчеты онлайн</div>
+    <h1><span>Срез</span> по поверхности смерзания</h1>
+    <p class="hsub"; style="color: #ff0000;"><b><u>ВАЖНО!</u> Представленные данные носят исключительно вспомогательный и информационный характер и не претендуют на достоверность. Модель представляет собой гипотетическое поведение грунта при выбранных условиях и характеристиках.</br></p>
+
+  </div>
+  <div class="hinfo">
+    <strong>R<sub>af</sub></strong> — адгезионное сопротивление срезу<br>
+    <strong>R<sub>sh</sub></strong> — сопротивление по поверхности смерзания<br>
+    <strong>δ</strong> — деформация среза, мм<br>
+    <strong>τ</strong> — касательная нагрузка, кН / МПа
+  </div>
+</header>
+
+<!-- PARAMS PANEL -->
+<div class="panel">
+  <div class="ph">Тип и материал</div>
+  <div class="r2">
+    <div>
+      <div class="lbl">Предельное сопротивление</div>
+      <div class="radio-row">
+        <label><input type="radio" name="rt" value="Raf" checked> R<sub>af</sub></label>
+        <label><input type="radio" name="rt" value="Rsh"> R<sub>sh</sub></label>
+      </div>
+    </div>
+    <div>
+      <div class="lbl">Материал контакта</div>
+      <select id="mat">
+        <option value="steel" selected>Сталь</option>
+        <option value="concrete">Бетон</option>
+        <option value="soil">Грунт–грунт</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="ph">Нагрузки</div>
+  <div class="r4">
+    <div>
+      <div class="lbl">Сопротивление срезу R, МПа</div>
+      <input type="number" id="R_mpa" value="0.07779" step="0.001" min="0.001">
+      <div class="hint">предельно длительное значение</div>
+    </div>
+    <div>
+      <div class="lbl">Нормальное давление σ, кПа</div>
+      <input type="number" id="sigma_kpa" value="100" step="10" min="1">
+    </div>
+    <div>
+      <div class="lbl">Первая ступень τ₀, кН</div>
+      <input type="number" id="tau0_kn" value="0.047" step="0.005" min="0.001">
+    </div>
+    <div>
+      <div class="lbl">Шаг ступени Δτ, кН</div>
+      <input type="number" id="dtau_kn" value="0.024" step="0.005" min="0.001">
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="ph">Первое граничное условие</div>
+  <div class="r3">
+    <div>
+      <div class="lbl">Макс. время ступени, ч</div>
+      <input type="number" id="max_step_h" value="12" step="1" min="1">
+      <div class="hint">ступень не дольше этого</div>
+    </div>
+    <div>
+      <div class="lbl">Параметр стабилизации, мм</div>
+      <input type="number" id="stab_mm" value="0.01" step="0.001" min="0.0001">
+      <div class="hint">прирост δ за интервал ≤ этого</div>
+    </div>
+    <div>
+      <div class="lbl">Шум плато ±, мм</div>
+      <input type="number" id="noise_mm" value="0.011" step="0.001" min="0">
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="ph">Второе граничное условие</div>
+  <div class="r3">
+    <div>
+      <div class="lbl">Кол-во сравниваемых интервалов</div>
+      <input type="number" id="n_intervals" value="2" step="1" min="1" max="5">
+    </div>
+    <div>
+      <div class="lbl">Время интервала, ч</div>
+      <input type="number" id="interval_h" value="8" step="1" min="1">
+    </div>
+    <div>
+      <div class="lbl">Предельная деформация среза, мм</div>
+      <input type="number" id="d_limit" value="7.15" step="0.05" min="0.1">
+      <div class="hint">аварийный стоп → срез</div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="ph">Образец и испытание</div>
+  <div class="r4">
+    <div>
+      <div class="lbl">Площадь образца, см²</div>
+      <input type="number" id="area_cm2" value="50" step="5" min="1">
+    </div>
+    <div>
+      <div class="lbl">Количество ступеней</div>
+      <input type="number" id="n_steps" value="7" step="1" min="2" max="20">
+    </div>
+    <div>
+      <div class="lbl">Время уплотнения, мин</div>
+      <input type="number" id="preload_min" value="5" step="1" min="0">
+    </div>
+    <div>
+      <div class="lbl">Точек на ступень</div>
+      <input type="number" id="pts_step" value="30" step="5" min="10" max="80">
+    </div>
+  </div>
+
+  <div id="warn" class="warn"></div>
+  <div class="btn-row">
+    <button class="btn-calc" onclick="run()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      Рассчитать
+    </button>
+    <button class="btn-sec" onclick="doExport()">Экспорт CSV</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results" style="display:none">
+
+  <!-- Info -->
+  <div class="info-box" id="info_box"></div>
+
+  <!-- Metrics -->
+  <div class="metrics-row">
+    <div class="metric">
+      <div class="mv" id="m_R_kn">—</div>
+      <div class="ml">R в кН</div>
+    </div>
+    <div class="metric">
+      <div class="mv" id="m_steps">—</div>
+      <div class="ml">Ступеней</div>
+    </div>
+    <div class="metric danger">
+      <div class="mv" id="m_tfail">—</div>
+      <div class="ml">Время среза, ч</div>
+    </div>
+    <div class="metric danger">
+      <div class="mv" id="m_dfail">—</div>
+      <div class="ml">Деформация при срезе, мм</div>
+    </div>
+  </div>
+
+  <!-- Compare -->
+  <div class="cmp-row">
+    <div class="cmp-card">
+      <div class="cl">R заданное (предельно длительное)</div>
+      <div class="cv" id="c_given">—</div>
+      <div class="cl" id="c_given_kn"></div>
+    </div>
+    <div class="cmp-card">
+      <div class="cl">R с графика (нагрузка последней ступени)</div>
+      <div class="cv" id="c_graph">—</div>
+      <div class="cl" id="c_err"></div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="panel">
+    <div class="ph">График δ(t) и τ(t)</div>
+    <div class="leg">
+      <span class="leg-item"><span class="leg-line" style="background:#378ADD"></span>Деформация δ, мм (лев.)</span>
+      <span class="leg-item"><span class="leg-line" style="background:#1D9E75"></span>Нагрузка τ, кН (прав.)</span>
+      <span class="leg-item"><span class="leg-line" style="background:#E28A00"></span>Нарастающая ползучесть</span>
+      <span class="leg-item"><span class="leg-dot" style="background:#E24B4A"></span>Момент среза</span>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="ch" height="320"></canvas>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="rc anim">
+    <div class="rh">
+      <span class="rtit">
+        Таблица точек
+        <span style="font-size:11px;font-weight:400;color:var(--t3);margin-left:6px">
+          <span style="color:var(--jump-t)">■</span> LoadStage &nbsp;
+          <span style="color:var(--pref-t)">■</span> нарастание &nbsp;
+          <span style="color:var(--fail-t)">■</span> СРЕЗ
+        </span>
+      </span>
+      <div class="rh-right">
+        <span class="copy-hint">Заголовок столбца → скопировать</span>
+        <button class="ctsv" onclick="doExport()">Экспорт CSV</button>
+      </div>
+    </div>
+    <div class="tsc">
+      <table class="rt" id="datatable">
+        <thead><tr>
+          <th class="cc" onclick="copyCol(0)">#<span class="ch">↓ копировать</span></th>
+          <th>Ступень</th>
+          <th class="cc" onclick="copyCol(2)">τ, кН<span class="ch">↓ копировать</span></th>
+          <th class="cc" onclick="copyCol(3)">τ, МПа<span class="ch">↓ копировать</span></th>
+          <th class="cc" onclick="copyCol(4)">t, ч<span class="ch">↓ копировать</span></th>
+          <th class="cc" onclick="copyCol(5)">t, с<span class="ch">↓ копировать</span></th>
+          <th class="cc" onclick="copyCol(6)">δ, мм<span class="ch">↓ копировать</span></th>
+          <th class="cc" onclick="copyCol(7)">σ, кПа<span class="ch">↓ копировать</span></th>
+          <th class="cc" onclick="copyCol(8)">σ, МПа<span class="ch">↓ копировать</span></th>
+          <th>Этап</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span>ГОСТ 12248.8-2020 · Испытание мерзлых грунтов на срез по поверхности смерзания</span>
+  <span>Нажмите заголовок столбца → скопировать значения</span>
+</footer>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let chartInst = null;
+let allRows   = [];
+let stepBounds = [];
+
+const MAT = {
+  steel:    { jumpScale: 0.62, preFail: 1.8, failDrop: 0.54 },
+  concrete: { jumpScale: 0.85, preFail: 2.6, failDrop: 0.42 },
+  soil:     { jumpScale: 1.10, preFail: 3.3, failDrop: 0.32 }
+};
+
+// ═══════════════════════════════════════════════════════
+// MATH HELPERS
+// ═══════════════════════════════════════════════════════
+function seededRand(seed) {
+  let s = seed >>> 0;
+  return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 0xffffffff; };
+}
+
+function irregularTimes(startT, totalDur, nPts, rng) {
+  const times = [];
+  const nEarly = Math.floor(nPts * 0.38);
+  const earlyDur = totalDur * 0.10;
+  for (let i = 0; i < nEarly; i++) times.push(startT + earlyDur * (1 - Math.pow(1 - rng(), 2.8)));
+  for (let i = 0; i < nPts - nEarly; i++) times.push(startT + earlyDur + (totalDur - earlyDur) * Math.pow(rng(), 0.55));
+  times.sort((a, b) => a - b);
+  const out = [times[0]];
+  for (let i = 1; i < times.length; i++) if (times[i] - out[out.length - 1] >= 25) out.push(times[i]);
+  return out;
+}
+
+function jumpAmp(si, nSteps, dLimit, m, rng) {
+  const pos = si / Math.max(nSteps - 1, 1);
+  const totalD = dLimit * 0.76;
+  let base;
+  if (si < nSteps - 1) {
+    base = (totalD / (nSteps + 1)) * m.jumpScale * (0.15 + 3.4 * Math.pow(pos, 2.5));
+  } else {
+    const pp = (si - 1) / Math.max(nSteps - 1, 1);
+    const prev = (totalD / (nSteps + 1)) * m.jumpScale * (0.15 + 3.4 * Math.pow(pp, 2.5));
+    base = prev * (2.0 + rng() * 2.4);
+  }
+  return Math.max(0.0005, base * (0.75 + rng() * 0.50));
+}
+
+function calcStepDur(si, nSteps, jAmp, stab_mm, nIntervals, intervalS, maxStepS, rng) {
+  const minStepS = nIntervals * intervalS;
+  const pos = si / Math.max(nSteps - 1, 1);
+  const tauCreep = intervalS * (0.6 + pos * 5.8);
+  const arg = (jAmp * intervalS) / (stab_mm * tauCreep + 1e-12);
+  let tStab = arg > 1 ? tauCreep * Math.log(arg) : minStepS * 0.5;
+  tStab = Math.max(minStepS, Math.min(maxStepS, tStab));
+  return Math.round(tStab * (0.70 + rng() * 0.60) / 60) * 60;
+}
+
+function makePlateauChar(noise_mm, rng) {
+  return {
+    noiseAmp:   noise_mm * (0.3 + rng() * 2.2),
+    waveAmp:    noise_mm * (0   + rng() * 3.0),
+    wavePeriod: 1800 + rng() * 7200,
+    wavePhase:  rng() * Math.PI * 2,
+    driftDir:   rng() > 0.5 ? 1 : -1,
+    driftSpeed: noise_mm * (0   + rng() * 1.5),
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+// MAIN CALCULATION
+// ═══════════════════════════════════════════════════════
+function run() {
+  const R_mpa     = parseFloat(document.getElementById('R_mpa').value);
+  const sigma_kpa = parseFloat(document.getElementById('sigma_kpa').value);
+  const tau0_kn   = parseFloat(document.getElementById('tau0_kn').value);
+  const dtau_kn   = parseFloat(document.getElementById('dtau_kn').value);
+  const area_cm2  = parseFloat(document.getElementById('area_cm2').value);
+  const nSteps    = parseInt(document.getElementById('n_steps').value);
+  const maxStepH  = parseFloat(document.getElementById('max_step_h').value);
+  const stab_mm   = parseFloat(document.getElementById('stab_mm').value);
+  const noise_mm  = parseFloat(document.getElementById('noise_mm').value);
+  const nIntervals = parseInt(document.getElementById('n_intervals').value);
+  const intervalH  = parseFloat(document.getElementById('interval_h').value);
+  const dLimit     = parseFloat(document.getElementById('d_limit').value);
+  const preloadMin = parseFloat(document.getElementById('preload_min').value);
+  const ptsMax     = parseInt(document.getElementById('pts_step').value);
+
+  const area_m2   = area_cm2 * 1e-4;
+  const R_kn      = R_mpa * area_m2 * 1000;
+  const sigma_mpa = sigma_kpa / 1000;
+  const m         = MAT[document.getElementById('mat').value];
+  const intervalS = intervalH * 3600;
+  const maxStepS  = maxStepH * 3600;
+  const warn      = document.getElementById('warn');
+
+  if (tau0_kn >= R_kn) {
+    warn.style.display = 'block';
+    warn.textContent = 'τ₀ (' + tau0_kn.toFixed(4) + ' кН) ≥ R (' + R_kn.toFixed(4) + ' кН). Уменьшите первую ступень.';
+    return;
+  }
+  warn.style.display = 'none';
+
+  const rng = seededRand(113 + Math.round(R_mpa * 400000) + nSteps * 31 + Math.round(maxStepH * 17));
+
+  const steps_kn = [];
+  for (let i = 0; i < nSteps - 1; i++) {
+    const base = tau0_kn + (R_kn - tau0_kn) * i / (nSteps - 1);
+    steps_kn.push(+(base + (rng() - 0.5) * dtau_kn * 0.07).toFixed(6));
+  }
+  steps_kn.push(+R_kn.toFixed(6));
+
+  allRows = []; stepBounds = [];
+  let t_global = preloadMin * 60, delta_base = 0, failIdx = -1;
+  const stepDurH = [];
+  const preFailStart = Math.max(0, nSteps - 3);
+
+  if (preloadMin > 0) {
+    [0, 0.3, 0.65, 1.0].forEach(f => allRows.push({
+      step: 0, tau_kn: 0, tau_mpa: 0, t_global: f * preloadMin * 60,
+      delta: 0, sigma_kpa, sigma_mpa, action: 'Уплотнение', note: '', isJump: false, isPreFail: false
+    }));
+  }
+
+  steps_kn.forEach((tau_kn, si) => {
+    const isFail    = si === nSteps - 1;
+    const tau_mpa   = tau_kn / (area_m2 * 1000);
+    const jAmp      = jumpAmp(si, nSteps, dLimit, m, rng);
+    const isPreFail = si >= preFailStart && !isFail;
+    const pos       = si / Math.max(nSteps - 1, 1);
+
+    let dur;
+    if (isFail) {
+      dur = nIntervals * intervalS * (0.20 + rng() * 0.45);
+    } else if (isPreFail) {
+      dur = maxStepS * (0.85 + rng() * 0.15);
+    } else {
+      dur = calcStepDur(si, nSteps, jAmp, stab_mm, nIntervals, intervalS, maxStepS, rng);
+    }
+    stepDurH.push((dur / 3600).toFixed(1));
+    stepBounds.push(t_global);
+
+    const loadDur = 8 + rng() * 30;
+    const nLoad   = 4 + Math.floor(rng() * 5);
+    allRows.push({
+      step: si + 1, tau_kn, tau_mpa, t_global,
+      delta: delta_base + (rng() - 0.5) * noise_mm * 0.3,
+      sigma_kpa, sigma_mpa, action: 'LoadStage', note: 'С' + (si + 1), isJump: si > 0, isPreFail
+    });
+    for (let j = 1; j <= nLoad; j++) {
+      const frac = j / nLoad;
+      allRows.push({
+        step: si + 1, tau_kn, tau_mpa, t_global: t_global + frac * loadDur,
+        delta: Math.max(0, delta_base + jAmp * Math.pow(frac, 0.30) + (rng() - 0.5) * noise_mm * 0.25),
+        sigma_kpa, sigma_mpa, action: 'LoadStage', note: '', isJump: false, isPreFail: false
+      });
+    }
+
+    const delta_plateau = delta_base + jAmp;
+    const stabStart     = t_global + loadDur;
+    const stabDur       = Math.max(60, dur - loadDur);
+    const pc            = makePlateauChar(noise_mm, rng);
+    const durFrac       = Math.min(1, stabDur / maxStepS);
+    const nPtsThis      = Math.max(8, Math.round(ptsMax * (0.25 + durFrac * 0.75)));
+
+    if (isFail) {
+      const times = irregularTimes(stabStart, stabDur, nPtsThis, rng);
+      let hit = false;
+      for (let i = 0; i < times.length; i++) {
+        const t = times[i];
+        const frac   = (t - stabStart) / stabDur;
+        const elapsed = t - stabStart;
+        const wave  = pc.waveAmp * Math.sin(2 * Math.PI * elapsed / pc.wavePeriod + pc.wavePhase);
+        const drift = pc.driftDir * pc.driftSpeed * (elapsed / 3600);
+        const noise = (Math.random() - 0.5) * pc.noiseAmp * 2;
+        let creep = 0;
+        if (frac > 0.45) {
+          const f2 = (frac - 0.45) / 0.55;
+          creep = (dLimit - delta_plateau) * 0.92 * Math.pow(f2, m.preFail);
+        }
+        const delta = delta_plateau + wave + drift + noise + creep;
+        allRows.push({
+          step: si + 1, tau_kn, tau_mpa, t_global: t,
+          delta: Math.max(0, Math.min(dLimit * 1.005, delta)),
+          sigma_kpa, sigma_mpa, action: 'Stabilization', note: '', isJump: false, isPreFail: false
+        });
+        if (delta >= dLimit && !hit) {
+          hit = true;
+          allRows[allRows.length - 1].delta = +(dLimit * (1 + (Math.random() - 0.5) * 0.002)).toFixed(5);
+          allRows[allRows.length - 1].note  = 'СРЕЗ';
+          failIdx = allRows.length - 1;
+          break;
+        }
+      }
+      if (!hit) { allRows[allRows.length - 1].note = 'СРЕЗ'; failIdx = allRows.length - 1; }
+
+      const d_fail  = allRows[failIdx].delta;
+      const t_fail  = allRows[failIdx].t_global;
+      const d_drop  = d_fail * m.failDrop;
+      const postDur = 1000 + rng() * 2500;
+      const nPost   = Math.max(6, Math.floor(nPtsThis * 0.30));
+      irregularTimes(t_fail, postDur, nPost, rng).forEach(t => {
+        const frac = (t - t_fail) / postDur;
+        const drop = d_drop * (1 - Math.exp(-8 * frac));
+        allRows.push({
+          step: si + 1, tau_kn, tau_mpa, t_global: t,
+          delta: Math.max(0, d_fail - drop + (Math.random() - 0.5) * noise_mm * 1.2),
+          sigma_kpa, sigma_mpa, action: 'Stabilization', note: 'после среза', isJump: false, isPreFail: false
+        });
+      });
+      t_global   = t_fail + postDur;
+      delta_base = d_fail - d_drop;
+
+    } else if (isPreFail) {
+      const stepsFromFail = nSteps - 1 - si;
+      const growthRate    = noise_mm * (stepsFromFail === 1 ? 8.0 : 3.0);
+      const totalGrowth   = growthRate * (stabDur / 3600);
+      irregularTimes(stabStart, stabDur, nPtsThis, rng).forEach(t => {
+        const elapsed = t - stabStart;
+        const frac    = elapsed / stabDur;
+        const wave    = pc.waveAmp * Math.sin(2 * Math.PI * elapsed / pc.wavePeriod + pc.wavePhase);
+        const noise   = (Math.random() - 0.5) * pc.noiseAmp * 2;
+        allRows.push({
+          step: si + 1, tau_kn, tau_mpa, t_global: t,
+          delta: Math.max(0, delta_plateau + totalGrowth * frac + wave + noise),
+          sigma_kpa, sigma_mpa, action: 'Stabilization', note: 'нарастание', isJump: false, isPreFail: true
+        });
+      });
+      delta_base = delta_plateau + totalGrowth;
+      t_global  += dur;
+
+    } else {
+      irregularTimes(stabStart, stabDur, nPtsThis, rng).forEach(t => {
+        const elapsed = t - stabStart;
+        const wave  = pc.waveAmp * Math.sin(2 * Math.PI * elapsed / pc.wavePeriod + pc.wavePhase);
+        const drift = pc.driftDir * pc.driftSpeed * (elapsed / 3600);
+        const noise = (Math.random() - 0.5) * pc.noiseAmp * 2;
+        allRows.push({
+          step: si + 1, tau_kn, tau_mpa, t_global: t,
+          delta: Math.max(0, delta_plateau + wave + drift + noise),
+          sigma_kpa, sigma_mpa, action: 'Stabilization', note: '', isJump: false, isPreFail: false
+        });
+      });
+      delta_base = delta_plateau + (pc.driftDir * pc.driftSpeed * stabDur / 3600);
+      t_global  += dur;
+    }
+  });
+
+  // ── Metrics ──
+  const failRow    = allRows[failIdx];
+  const failH      = (failRow.t_global / 3600).toFixed(1);
+  const R_graph_kn = +(R_kn * (1 + (rng() - 0.5) * 0.028)).toFixed(6);
+  const R_graph_mpa = +(R_graph_kn / (area_m2 * 1000)).toFixed(6);
+  const errPct     = (((R_graph_mpa - R_mpa) / R_mpa) * 100).toFixed(1);
+  const errSign    = R_graph_mpa >= R_mpa ? '+' : '';
+
+  document.getElementById('m_R_kn').textContent   = R_kn.toFixed(5) + ' кН';
+  document.getElementById('m_steps').textContent  = nSteps;
+  document.getElementById('m_tfail').textContent  = failH + ' ч';
+  document.getElementById('m_dfail').textContent  = failRow.delta.toFixed(3) + ' мм';
+  document.getElementById('c_given').textContent  = R_mpa.toFixed(5) + ' МПа';
+  document.getElementById('c_given_kn').textContent = '= ' + R_kn.toFixed(5) + ' кН · площадь ' + area_cm2 + ' см²';
+  document.getElementById('c_graph').textContent  = R_graph_mpa.toFixed(5) + ' МПа';
+  document.getElementById('c_err').textContent    = R_graph_kn.toFixed(5) + ' кН · погрешность: ' + errSign + errPct + '%';
+  document.getElementById('info_box').textContent =
+    'Длительности ступеней (ч): ' + stepDurH.join(' → ') +
+    '\nЗа 2 ступени до среза: плато переходит в устойчивое нарастание ползучести (оранжевый участок)' +
+    '\nПоследняя ступень: нарастание ускоряется → достигается предельная деформация ' + dLimit + ' мм → СРЕЗ';
+
+  renderChart(failIdx);
+  renderTable(failIdx);
+
+  const res = document.getElementById('results');
+  res.style.display = 'block';
+  res.classList.add('anim');
+  setTimeout(() => res.classList.remove('anim'), 400);
+}
+
+// ═══════════════════════════════════════════════════════
+// CHART
+// ═══════════════════════════════════════════════════════
+function renderChart(failIdx) {
+  if (chartInst) chartInst.destroy();
+  const labels  = allRows.map(r => (r.t_global / 3600).toFixed(4));
+  const deltas  = allRows.map(r => +r.delta.toFixed(5));
+  const taus    = allRows.map(r => +r.tau_kn.toFixed(5));
+
+  const deltaNorm    = allRows.map((r, i) => r.isPreFail || r.note === 'нарастание' ? null : deltas[i]);
+  const deltaPreFail = allRows.map((r, i) => (r.isPreFail || r.note === 'нарастание') ? deltas[i] : null);
+  for (let i = 1; i < allRows.length; i++) {
+    if (deltaNorm[i] === null && deltaNorm[i-1] !== null) deltaPreFail[i-1] = deltas[i-1];
+    if (deltaNorm[i] !== null && deltaNorm[i-1] === null) deltaPreFail[i]   = deltas[i];
+  }
+
+  chartInst = new Chart(document.getElementById('ch'), {
+    type: 'line',
+    data: { labels, datasets: [
+      { label: 'δ норм.',   data: deltaNorm,    borderColor: '#378ADD', borderWidth: 1.5, pointRadius: 0, tension: 0, yAxisID: 'y', spanGaps: false },
+      { label: 'δ нараст.', data: deltaPreFail, borderColor: '#E28A00', borderWidth: 2,   pointRadius: 0, tension: 0, yAxisID: 'y', spanGaps: false },
+      { label: 'τ кН',      data: taus,         borderColor: '#1D9E75', borderWidth: 1.2, pointRadius: 0, tension: 0, borderDash: [5, 3], yAxisID: 'y1' },
+      { label: 'Срез',
+        data: labels.map((_, i) => i === failIdx ? deltas[i] : null),
+        borderColor: '#E24B4A', backgroundColor: '#E24B4A',
+        pointRadius: labels.map((_, i) => i === failIdx ? 8 : 0),
+        pointStyle: 'circle', showLine: false, yAxisID: 'y' }
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false } },
+      scales: {
+        x:  { title: { display: true, text: 'Время, ч', font: { size: 11, family: "'Golos Text'" }, color: '#8e8e86' },
+               ticks: { maxTicksLimit: 14, font: { size: 10, family: "'JetBrains Mono'" }, color: '#8e8e86' },
+               grid: { color: 'rgba(0,0,0,0.05)' } },
+        y:  { title: { display: true, text: 'δ, мм', font: { size: 11, family: "'Golos Text'" }, color: '#8e8e86' },
+               position: 'left', ticks: { font: { size: 10, family: "'JetBrains Mono'" }, color: '#8e8e86' },
+               grid: { color: 'rgba(0,0,0,0.05)' } },
+        y1: { title: { display: true, text: 'τ, кН', font: { size: 11, family: "'Golos Text'" }, color: '#8e8e86' },
+               position: 'right', grid: { drawOnChartArea: false },
+               ticks: { font: { size: 10, family: "'JetBrains Mono'" }, color: '#8e8e86' } }
+      }
+    },
+    plugins: [{
+      id: 'overlay',
+      afterDraw(chart) {
+        const ctx = chart.ctx, ys = chart.scales.y, xs = chart.scales.x;
+        stepBounds.forEach((tSec) => {
+          const tH = (tSec / 3600).toFixed(4);
+          const idx = allRows.findIndex(r => (r.t_global / 3600).toFixed(4) === tH);
+          if (idx < 0) return;
+          const xp = xs.getPixelForValue(idx);
+          ctx.save(); ctx.setLineDash([3, 5]); ctx.strokeStyle = 'rgba(136,135,128,0.22)'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(xp, ys.top); ctx.lineTo(xp, ys.bottom); ctx.stroke(); ctx.restore();
+        });
+        const meta = chart.getDatasetMeta(0);
+        if (!meta.data[failIdx]) return;
+        const x = meta.data[failIdx].x;
+        ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = '#E24B4A'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(x, ys.top); ctx.lineTo(x, ys.bottom); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle = '#E24B4A'; ctx.font = 'bold 11px Golos Text, system-ui';
+        ctx.fillText('СРЕЗ  δ=' + allRows[failIdx].delta.toFixed(3) + ' мм', x + 5, ys.top + 14);
+        ctx.restore();
+      }
+    }]
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// TABLE
+// ═══════════════════════════════════════════════════════
+function renderTable(failIdx) {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  allRows.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    if      (r.note === 'СРЕЗ')       tr.className = 'r-fail';
+    else if (r.note === 'после среза') tr.className = 'r-post';
+    else if (r.isJump)                tr.className = 'r-jump';
+    else if (r.isPreFail || r.note === 'нарастание') tr.className = 'r-pref';
+    tr.innerHTML =
+      '<td>' + (i + 1) + '</td>' +
+      '<td>' + (r.step === 0 ? 'Пред.' : 'С' + r.step) + '</td>' +
+      '<td>' + r.tau_kn.toFixed(5)  + '</td>' +
+      '<td>' + r.tau_mpa.toFixed(6) + '</td>' +
+      '<td>' + (r.t_global / 3600).toFixed(5) + '</td>' +
+      '<td>' + r.t_global.toFixed(2) + '</td>' +
+      '<td>' + r.delta.toFixed(5)   + '</td>' +
+      '<td>' + r.sigma_kpa.toFixed(2) + '</td>' +
+      '<td>' + r.sigma_mpa.toFixed(5) + '</td>' +
+      '<td style="text-align:left;font-family:var(--fn);font-size:11px;color:var(--t3)">' + (r.note || r.action || '') + '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// COPY  (comma decimal for Russian Excel)
+// ═══════════════════════════════════════════════════════
+function toComma(v) { return String(v).replace('.', ','); }
+
+function copyCol(colIdx) {
+  if (!allRows.length) return;
+  const getVal = (r, i) => {
+    switch (colIdx) {
+      case 0: return i + 1;
+      case 2: return r.tau_kn.toFixed(5);
+      case 3: return r.tau_mpa.toFixed(6);
+      case 4: return (r.t_global / 3600).toFixed(5);
+      case 5: return r.t_global.toFixed(2);
+      case 6: return r.delta.toFixed(5);
+      case 7: return r.sigma_kpa.toFixed(2);
+      case 8: return r.sigma_mpa.toFixed(5);
+      default: return '';
+    }
+  };
+  const text = allRows.map((r, i) => toComma(String(getVal(r, i)))).join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const ths = document.querySelectorAll('#datatable thead th');
+    const th  = ths[colIdx];
+    if (th) {
+      th.classList.add('copied');
+      setTimeout(() => th.classList.remove('copied'), 1500);
+    }
+    toast('✓ Столбец скопирован');
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// EXPORT CSV
+// ═══════════════════════════════════════════════════════
+function doExport() {
+  if (!allRows.length) { toast('⚠ Сначала выполните расчёт'); return; }
+  const rtype = document.querySelector('input[name=rt]:checked').value;
+  const mat   = document.getElementById('mat').value;
+  let csv = 'sep=;\n';
+  csv += 'Тип;' + rtype + ';R;' + document.getElementById('R_mpa').value + ' МПа;sigma;' +
+    document.getElementById('sigma_kpa').value + ' кПа;площадь;' + document.getElementById('area_cm2').value + ' см²\n\n';
+  csv += 'N;Ступень;tau (кН);tau (МПа);t (ч);t (с);delta (мм);sigma (кПа);sigma (МПа);Этап;Примечание\n';
+  allRows.forEach((r, i) => {
+    csv += (i + 1) + ';' + (r.step === 0 ? 'Пред.' : r.step) + ';' +
+      r.tau_kn.toFixed(5) + ';' + r.tau_mpa.toFixed(6) + ';' +
+      (r.t_global / 3600).toFixed(5) + ';' + r.t_global.toFixed(2) + ';' +
+      r.delta.toFixed(5) + ';' + r.sigma_kpa.toFixed(2) + ';' + r.sigma_mpa.toFixed(5) + ';' +
+      (r.action || '') + ';' + (r.note || '') + '\n';
+  });
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'shear_' + rtype + '_' + mat + '.csv';
+  a.click();
+  toast('✓ CSV экспортирован');
+}
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── init ──
+run();
+</script>
+</body>
+</html>

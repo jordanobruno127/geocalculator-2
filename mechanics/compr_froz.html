@@ -400,7 +400,7 @@ function calculateFrozen() {
         return;
     }
 
-    let p1_raw = (density * depth * 9.81) / 1000;
+    let p1_raw = (density * depth) / 100;
     let p1 = p1_raw;
     const isSandy = soil.includes('пески средней') || soil.includes('пески мелкие');
 
