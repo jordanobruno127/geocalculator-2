@@ -105,7 +105,7 @@ header .lede{
   margin:18px auto 0;
 }
 
-/* ===== контентная обёртка ===== */
+/* ===== контентная обертка ===== */
 .wrap{
   max-width:1240px;
   margin:0 auto;
@@ -531,7 +531,9 @@ footer .gost-line{
 
 <header>
   <h1>Компрессия и срез грунта</h1>
-  <p class="lede">Компрессионное сжатие талого грунта, одноплоскостной срез и расчёт ступеней вертикальной нагрузки.</p>
+  <p class="lede">Компрессионное сжатие талого грунта, одноплоскостной срез и расчет ступеней вертикальной нагрузки.
+  <b><strong>ГОСТ 12248.1-2020 · ГОСТ 12248.4-2020 · ГОСТ 25100-2020</strong></b>
+  </p>
 </header>
 
 <div class="wrap">
@@ -541,11 +543,11 @@ footer .gost-line{
     <p>Представленные данные носят исключительно вспомогательный и информационный характер и не претендуют на достоверность. Модель отражает гипотетическое поведение грунта при выбранных условиях и характеристиках.</p>
   </div>
 
-  <div class="section-label">Раздел расчёта</div>
+  <div class="section-label">Раздел расчета</div>
   <div class="method-buttons">
     <button class="tab active" id="tab-comp" onclick="swTab('comp',this)">Компрессионное сжатие</button>
     <button class="tab" id="tab-shear" onclick="swTab('shear',this)">Одноплоскостной срез</button>
-    <button class="tab" id="tab-steps" onclick="swTab('steps',this)">Расчёт ступеней вертикальной нагрузки</button>
+    <button class="tab" id="tab-steps" onclick="swTab('steps',this)">Расчет ступеней вертикальной нагрузки</button>
   </div>
 
   <!-- ═══ КОМПРЕССИОННОЕ СЖАТИЕ ═══ -->
@@ -687,7 +689,7 @@ footer .gost-line{
     </div>
   </div>
 
-  <!-- ═══ РАСЧЁТ СТУПЕНЕЙ ВЕРТИКАЛЬНОЙ НАГРУЗКИ ═══ -->
+  <!-- ═══ РАСЧеТ СТУПЕНЕЙ ВЕРТИКАЛЬНОЙ НАГРУЗКИ ═══ -->
   <div id="sec-steps" class="sec">
     <div class="calc-card">
       <div class="input-row">
@@ -751,12 +753,12 @@ function toast(msg) {
 function ilLabel(il, type) {
   if (type === 'sand') return null;
   if (type === 'sl') {
-    if (il < 0) return 'Твёрдая (IL < 0)';
+    if (il < 0) return 'Твердая (IL < 0)';
     if (il < 1.0) return 'Пластичная (0 ≤ IL < 1.0)';
     return 'Текучая (IL ≥ 1.0)';
   }
-  if (il < 0)    return 'Твёрдая (IL < 0)';
-  if (il < 0.25) return 'Полутвёрдая (0 ≤ IL < 0.25)';
+  if (il < 0)    return 'Твердая (IL < 0)';
+  if (il < 0.25) return 'Полутвердая (0 ≤ IL < 0.25)';
   if (il < 0.50) return 'Тугопластичная (0.25 ≤ IL < 0.50)';
   if (il < 0.75) return 'Мягкопластичная (0.50 ≤ IL < 0.75)';
   if (il < 1.0)  return 'Текучепластичная (0.75 ≤ IL < 1.0)';
@@ -1249,7 +1251,7 @@ function cpShear() {
 }
 
 // ═══════════════════════════════════════════════════════
-// РАСЧЁТ СТУПЕНЕЙ ВЕРТИКАЛЬНОЙ НАГРУЗКИ (из compr.html)
+// РАСЧеТ СТУПЕНЕЙ ВЕРТИКАЛЬНОЙ НАГРУЗКИ (из compr.html)
 // ═══════════════════════════════════════════════════════
 document.getElementById('vsSoilType').addEventListener('change', function() {
   const soil = this.value;
