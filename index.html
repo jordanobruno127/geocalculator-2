@@ -1,128 +1,95 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Геологические расчёты онлайн</title>
-
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    background-color: #ffffff;
-    min-height: 100vh;
-    box-sizing: border-box;
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-
-/* ====== ТВОЙ СТИЛЬ ОСТАЁТСЯ БЕЗ ИЗМЕНЕНИЙ ====== */
-/* (весь твой CSS не трогаю, он уже ниже) */
-
-
-/* ====== ПРИНУДИТЕЛЬНОЕ УВЕДОМЛЕНИЕ ====== */
-#domainModal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.75);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 999999;
-    font-family: Arial, sans-serif;
-}
-
-#domainModal .box {
-    width: 90%;
-    max-width: 520px;
-    background: #fff;
-    border-radius: 12px;
-    padding: 30px;
-    text-align: center;
-    box-shadow: 0 10px 35px rgba(0,0,0,0.3);
-}
-
-#domainModal h2 {
-    margin-top: 0;
-    color: #d32f2f;
-}
-
-#domainModal p {
-    font-size: 16px;
-    line-height: 1.5;
-    color: #333;
-}
-
-#domainModal button {
-    margin-top: 20px;
-    padding: 14px 24px;
-    font-size: 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background: #1976d2;
-    color: white;
-}
-#domainModal button:hover {
-    background: #125aa3;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сайт переехал — GeoCalculator.ru</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            border-top: 5px solid #2ecc71;
+        }
+        .icon {
+            font-size: 48px;
+            color: #2ecc71;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 22px;
+            margin: 0 0 15px 0;
+            color: #1a252f;
+            font-weight: 700;
+        }
+        p {
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 0 0 25px 0;
+            color: #7f8c8d;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #2ecc71;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+        .btn:hover {
+            background-color: #27ae60;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .footer {
+            margin-top: 25px;
+            font-size: 12px;
+            color: #bdc3c7;
+        }
+    </style>
 </head>
-
 <body>
 
-<!-- ====== ТВОЙ САЙТ (БЕЗ ИЗМЕНЕНИЙ) ====== -->
-
-<img src="/logo.png" alt="Логотип" class="logo">
-<h1>Геологические расчёты онлайн</h1>
-<p>Добро пожаловать! Здесь вы сможете рассчитать основные параметры грунтов:
-    влажность, гранулометрический состав, пределы пластичности, плотность и многое другое.</p>
-
-<div class="menu-buttons">
-    <a href="dispersed/dispersed.html">Дисперсный грунт</a>
-    <a href="scale.html">Скальный грунт</a>
-    <a href="frozen.html">Мерзлый грунт</a>
-</div>
-
-<div class="extra-buttons">
-    <a href="mechanics/mechanics.html" class="mechanics">Механика</a>
-    <a href="obrat/obrat.html" class="obrat">Обратные методы расчета</a>
-    <a href="reference.html" class="reference">Справочник</a>
-    <a href="contacts.html" class="contacts">Контакты</a>
-</div>
-
-<footer>
-    <div>© 2026 Geocalculator. Геологические расчеты онлайн</div>
-</footer>
-
-
-<!-- ====== ПРИНУДИТЕЛЬНЫЙ БАННЕР ====== -->
-<div id="domainModal">
-    <div class="box">
-        <h2>Внимание</h2>
-        <p>
-            Домен <b>geocalculator.online</b> больше не используется.
-        </p>
-        <p>
-            Новый официальный сайт: <b>geocalculator.ru</b>
-        </p>
-        <p>
-            Рекомендуется перейти для продолжения работы.
-        </p>
-
-        <button onclick="window.location.href='https://geocalculator.ru'">
-            Перейти на geocalculator.ru
-        </button>
+    <div class="container">
+        <div class="icon">🔄</div>
+        <h1>Сайт переехал</h1>
+        <p>Этот сайт больше не поддерживается. Для продолжения работы и получения актуальной информации, пожалуйста, перейдите на наш новый адрес.</p>
+        <a href="https://geocalculator.ru" class="btn">Перейти на geocalculator.ru</a>
+        <div class="footer">Вы будете перенаправлены автоматически через 10 секунд...</div>
     </div>
-</div>
 
-<script>
-document.body.style.overflow = "hidden";
-</script>
+    <script>
+        // Автоматический редирект через 10 секунд
+        setTimeout(function() {
+            window.location.href = "https://geocalculator.ru";
+        }, 10000);
+    </script>
 
 </body>
 </html>
